@@ -1,0 +1,28 @@
+# Dependencies
+/node_modules/
+
+# Production build
+/dist/
+
+# Raw staging extraction folders in project root only
+/Africa/
+/Brand_and_General/
+/Caribbean/
+/Europe/
+
+# Local env files
+.env
+.env.local
+.env.*.local
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

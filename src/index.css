@@ -1,0 +1,345 @@
+@import "tailwindcss";
+@source "../index.html";
+@source "../src";
+
+@layer base {
+  :root {
+    /* === Virgin LE Typography System === */
+    /* Primary: miller-banner (Typekit serif) with Google fallbacks */
+    --font-serif: "miller-banner", "Cormorant Garamond", Georgia, Cambria, "Times New Roman", Times, serif;
+    /* Secondary: aktiv-grotesk (Typekit sans) with Google fallbacks */
+    --font-sans: "aktiv-grotesk", "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    /* === Virgin LE Neutral Palette === */
+    --color-dark: #0f0f0f;
+    --color-off-white: #f6f6f6;
+    --color-badge-gray: #ededed;
+    --color-muted: #8a8a8a;
+
+    /* === MOS MOS Brand Palette (preserved) === */
+    --color-bg: #F7F4ED;
+    --color-text: #20221F;
+    --color-gold: #B69A68;
+    --color-border: #D9D0C2;
+    --color-accent: #78634B;
+
+    /* === Destination Brand Colors (Virgin LE style per-property) === */
+    --brand-uganda: #BA5F27;
+    --brand-tanzania: #B83C25;
+    --brand-rwanda: #7C6119;
+    --brand-kenya: #8A8F64;
+    --brand-south-africa: #4A4238;
+    --brand-dubai: #00B3D2;
+    --brand-thailand: #2CB2A5;
+    --brand-bali: #5F7361;
+    --brand-ethiopia: #B83C25;
+    --brand-egypt: #365D9D;
+
+    /* === Virgin LE Timing === */
+    --ease-luxury: cubic-bezier(0.19, 1, 0.22, 1);
+    --ease-hover: cubic-bezier(0.25, 1, 0.5, 1);
+    --duration-reveal: 1.25s;
+    --duration-hover: 0.55s;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    color: var(--color-text);
+    background-color: var(--color-bg);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, .font-serif {
+    font-family: var(--font-serif);
+  }
+}
+
+/* ============================================
+   VIRGIN LE CURTAIN REVEAL ANIMATIONS
+   The signature effect: a solid overlay slides
+   away while the image beneath scales & fades in
+   ============================================ */
+
+/* Left curtain: overlay slides left to reveal */
+@keyframes curtainSlideLeft {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-110%);
+  }
+}
+
+/* Right curtain: overlay slides right */
+@keyframes curtainSlideRight {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(110%);
+  }
+}
+
+/* Image reveal beneath curtain */
+@keyframes imageRevealBeneath {
+  0% {
+    opacity: 0;
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.0);
+  }
+}
+
+/* Hero entrance: fade + rise */
+@keyframes heroFadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Letter float in (preserved from original) */
+@keyframes letterFloatIn {
+  0% {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+    filter: blur(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes bounceSubtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  0% { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* === Animation Utility Classes === */
+
+.animate-letter-in {
+  animation: letterFloatIn 1.2s var(--ease-luxury) forwards;
+}
+
+.animate-bounce-subtle {
+  animation: bounceSubtle 3.2s ease-in-out infinite;
+}
+
+.animate-hero-fade-up {
+  animation: heroFadeUp 1.4s var(--ease-luxury) forwards;
+}
+
+.animate-fade-in {
+  animation: fadeIn 1s ease-out forwards;
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.8s var(--ease-luxury) forwards;
+}
+
+/* === Virgin LE Curtain Reveal Component === */
+.curtain-reveal {
+  position: relative;
+  overflow: hidden;
+}
+
+.curtain-reveal__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background-color: var(--color-bg);
+  transform: translateX(0);
+}
+
+.curtain-reveal__overlay--left.is-revealed {
+  animation: curtainSlideLeft var(--duration-reveal) var(--ease-luxury) forwards;
+}
+
+.curtain-reveal__overlay--right.is-revealed {
+  animation: curtainSlideRight var(--duration-reveal) var(--ease-luxury) forwards;
+}
+
+.curtain-reveal__content {
+  opacity: 0;
+  transform: scale(1.08);
+}
+
+.curtain-reveal__content.is-revealed {
+  animation: imageRevealBeneath var(--duration-reveal) var(--ease-luxury) 0.15s forwards;
+}
+
+/* === Virgin LE Hover Physics === */
+.hover-lift {
+  transition: transform var(--duration-hover) var(--ease-hover),
+              box-shadow var(--duration-hover) var(--ease-hover);
+}
+.hover-lift:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15);
+}
+
+.hover-scale-image {
+  transition: transform var(--duration-hover) var(--ease-hover);
+}
+.hover-scale-image:hover {
+  transform: scale(1.03);
+}
+
+/* === Virgin LE Floating Badge === */
+.floating-badge {
+  position: absolute;
+  top: -12px;
+  left: 24px;
+  z-index: 10;
+  padding: 6px 16px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  background: var(--color-text);
+  color: var(--color-bg);
+}
+
+/* === Header Scroll Transitions (Virgin LE pattern) === */
+.header-glass {
+  transition: all 0.4s var(--ease-luxury);
+}
+
+.header-glass--scrolled {
+  background: rgba(247, 244, 237, 0.97);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 1px 0 rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+}
+
+/* === Asymmetric Editorial Split (Virgin LE 40/60 layout) === */
+.editorial-split {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .editorial-split {
+    grid-template-columns: 2fr 3fr;
+    gap: 3rem;
+    align-items: center;
+  }
+
+  .editorial-split--reverse {
+    grid-template-columns: 3fr 2fr;
+  }
+}
+
+/* === Masonry Staggered Gallery === */
+.masonry-grid {
+  columns: 1;
+  column-gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .masonry-grid {
+    columns: 2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .masonry-grid {
+    columns: 3;
+  }
+}
+
+.masonry-grid > * {
+  break-inside: avoid;
+  margin-bottom: 1.5rem;
+}
+
+/* === Video Section Overlay === */
+.video-overlay {
+  position: relative;
+}
+
+.video-overlay::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.7) 0%,
+    rgba(0, 0, 0, 0.2) 40%,
+    rgba(0, 0, 0, 0.3) 100%
+  );
+  pointer-events: none;
+}
+
+/* === Scroll indicator line === */
+.scroll-line {
+  width: 1px;
+  height: 60px;
+  background: linear-gradient(to bottom, var(--color-gold), transparent);
+  animation: bounceSubtle 3s ease-in-out infinite;
+}
+
+/* === Separator Ornament (Virgin LE style) === */
+.ornament-line {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.ornament-line::before,
+.ornament-line::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--color-border);
+}
+
+/* Hide scrollbar for tabs */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* === Smooth scroll for full page === */
+html {
+  scroll-behavior: smooth;
+}
+
+/* === Selection colors === */
+::selection {
+  background: rgba(182, 154, 104, 0.3);
+  color: var(--color-text);
+}

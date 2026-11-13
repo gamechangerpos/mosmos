@@ -1,0 +1,8 @@
+{
+  "name": "Omoja Safari Tour",
+  "description": "Premium cinematic travel platform for luxury African safaris and extraordinary global journeys.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

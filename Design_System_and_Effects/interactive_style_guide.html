@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virgin Limited Edition — Design System & Interactive Showcase</title>
+  <!-- Adobe Typekit styles extracted from live site -->
+  <link rel="stylesheet" href="https://use.typekit.net/lih7vef.css">
+  <style>
+    :root {
+      --brand-color: #BA5F27; /* Default: Mahali Mzuri Africa Ochre */
+      --color-dark: #0f0f0f;
+      --color-pure-black: #000000;
+      --color-light-bg: #f6f6f6;
+      --color-white: #ffffff;
+      --color-muted: #767676;
+      --color-badge: #ededed;
+      --font-serif: "miller-banner", Georgia, serif;
+      --font-sans: "aktiv-grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      color: var(--color-dark);
+      background-color: #fafafa;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Sticky Navigation */
+    header.demo-header {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid #eaeaea;
+      padding: 18px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s ease;
+    }
+
+    .brand-title {
+      font-family: var(--font-serif);
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--color-dark);
+    }
+
+    .brand-title span {
+      color: var(--brand-color);
+      transition: color 0.3s ease;
+    }
+
+    .header-badge {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      padding: 6px 14px;
+      background: var(--brand-color);
+      color: #fff;
+      border-radius: 20px;
+      font-weight: 700;
+      transition: background 0.3s ease;
+    }
+
+    /* Container */
+    .container {
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 50px 24px;
+    }
+
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: 38px;
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+
+    .section-subtitle {
+      font-size: 15px;
+      color: var(--color-muted);
+      margin-bottom: 35px;
+    }
+
+    /* Property Palette Switcher */
+    .palette-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin-bottom: 60px;
+    }
+
+    .palette-card {
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 16px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .palette-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+    }
+
+    .palette-card.active {
+      border-color: var(--color-dark);
+      background: #fff;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .color-swatch {
+      width: 42px;
+      height: 42px;
+      border-radius: 6px;
+      flex-shrink: 0;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1);
+    }
+
+    .palette-info h4 {
+      font-family: var(--font-serif);
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .palette-info p {
+      font-size: 11px;
+      color: var(--color-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    /* Live Curtain Reveal Showcase */
+    .showcase-panel {
+      background: #ffffff;
+      border: 1px solid #eaeaea;
+      border-radius: 12px;
+      padding: 40px;
+      margin-bottom: 60px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+
+    .curtain-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .btn {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 700;
+      padding: 12px 24px;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .btn-primary {
+      background: var(--brand-color);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      filter: brightness(0.9);
+      transform: translateY(-1px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--color-dark);
+      color: var(--color-dark);
+    }
+
+    .btn-outline:hover {
+      background: var(--color-dark);
+      color: #fff;
+    }
+
+    /* Curtain Keyframe Classes */
+    .curtain-frame {
+      position: relative;
+      width: 100%;
+      height: 480px;
+      overflow: hidden;
+      border-radius: 8px;
+      background: #000;
+    }
+
+    .curtain-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.8s ease;
+    }
+
+    .curtain-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #ffffff;
+      z-index: 10;
+      transform-origin: left center;
+    }
+
+    .curtain-frame.animating-left .curtain-overlay {
+      animation: animate-image-left-curtain 0.9s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+    }
+
+    .curtain-frame.animating-right .curtain-overlay {
+      animation: animate-image-right-curtain 0.9s cubic-bezier(0.77, 0, 0.175, 1) forwards;
+    }
+
+    .curtain-frame.animating-left img,
+    .curtain-frame.animating-right img {
+      animation: animate-image-reveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes animate-image-left-curtain {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(-110%); }
+    }
+
+    @keyframes animate-image-right-curtain {
+      0% { transform: translateX(0%); }
+      100% { transform: translateX(110%); }
+    }
+
+    @keyframes animate-image-reveal {
+      0%, 45% { opacity: 0; transform: scale(1.08); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    /* Asymmetric Editorial Hero Split Layout */
+    .split-layout {
+      display: grid;
+      grid-template-columns: 42% 58%;
+      background: #ffffff;
+      border: 1px solid #eaeaea;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 60px;
+    }
+
+    @media (max-width: 900px) {
+      .split-layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .split-text {
+      padding: 50px 40px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+    }
+
+    .floating-badge {
+      position: absolute;
+      top: 24px;
+      left: 40px;
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      background: var(--color-badge);
+      padding: 6px 14px;
+      font-weight: 700;
+    }
+
+    .split-text h2 {
+      font-family: var(--font-serif);
+      font-size: 34px;
+      line-height: 1.18;
+      margin-top: 20px;
+      margin-bottom: 16px;
+      color: var(--color-dark);
+    }
+
+    .split-text p {
+      font-size: 14px;
+      line-height: 24px;
+      color: #333;
+      margin-bottom: 24px;
+    }
+
+    .split-image {
+      position: relative;
+      height: 100%;
+      min-height: 380px;
+    }
+
+    .split-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* Masonry Gallery Showcase */
+    .masonry-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-bottom: 60px;
+    }
+
+    @media (max-width: 800px) {
+      .masonry-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .masonry-card {
+      position: relative;
+      border-radius: 8px;
+      overflow: hidden;
+      background: #000;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    }
+
+    .masonry-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .masonry-card:hover img {
+      transform: scale(1.04);
+    }
+
+    .masonry-caption {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 20px;
+      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
+      color: #fff;
+    }
+
+    .masonry-caption h4 {
+      font-family: var(--font-serif);
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+
+    .masonry-caption p {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      opacity: 0.85;
+    }
+
+    /* Asset Stats Bar */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 60px;
+    }
+
+    .stat-box {
+      background: #ffffff;
+      padding: 24px;
+      border-radius: 8px;
+      border: 1px solid #eaeaea;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-family: var(--font-serif);
+      font-size: 38px;
+      font-weight: 700;
+      color: var(--brand-color);
+      transition: color 0.3s ease;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--color-muted);
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Sticky Header -->
+  <header class="demo-header" id="navbar">
+    <div class="brand-title">VIRGIN LIMITED EDITION <span>&bull; DESIGN SYSTEM</span></div>
+    <div class="header-badge" id="currentPropertyBadge">Mahali Mzuri (Africa)</div>
+  </header>
+
+  <div class="container">
+
+    <!-- Overview Stats -->
+    <div class="stats-bar">
+      <div class="stat-box">
+        <div class="stat-number">228</div>
+        <div class="stat-label">Extracted High-Res Master Photos</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number">10</div>
+        <div class="stat-label">Cinematic 4K/HD Hero Videos</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number">3</div>
+        <div class="stat-label">Organized Regions (Africa, Caribbean, Europe)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number">9</div>
+        <div class="stat-label">Luxury Property Destinations</div>
+      </div>
+    </div>
+
+    <!-- 1. Property Brand Colors -->
+    <h2 class="section-title">1. Property Color Palette & Theme Switcher</h2>
+    <p class="section-subtitle">Click on any luxury retreat below to switch the website's live brand accent color and observe theme adaptations:</p>
+    
+    <div class="palette-grid">
+      <!-- Africa -->
+      <div class="palette-card active" onclick="setTheme('#BA5F27', 'Mahali Mzuri (Africa - Kenya)')">
+        <div class="color-swatch" style="background: #BA5F27;"></div>
+        <div class="palette-info">
+          <h4>Mahali Mzuri</h4>
+          <p>Africa &bull; #BA5F27</p>
+        </div>
+      </div>
+
+      <div class="palette-card" onclick="setTheme('#B83C25', 'Kasbah Tamadot (Africa - Morocco)')">
+        <div class="color-swatch" style="background: #B83C25;"></div>
+        <div class="palette-info">
+          <h4>Kasbah Tamadot</h4>
+          <p>Africa &bull; #B83C25</p>
+        </div>
+      </div>
+
+      <div class="palette-card" onclick="setTheme('#4A4238', 'Finch Hattons (Africa - Kenya)')">
+        <div class="color-swatch" style="background: #4A4238;"></div>
+        <div class="palette-info">
+          <h4>Finch Hattons</h4>
+          <p>Africa &bull; #4A4238</p>
+        </div>
+      </div>
+
+      <div class="palette-card" onclick="setTheme('#8A8F64', 'Mont Rochelle (Africa - South Africa)')">
+        <div class="color-swatch" style="background: #8A8F64;"></div>
+        <div class="palette-info">
+          <h4>Mont Rochelle</h4>
+          <p>Africa &bull; #8A8F64</p>
+        </div>
+      </div>
+
+      <div class="palette-card" onclick="setTheme('#7C6119', 'Ulusaba (Africa - South Africa)')">
+        <div class="color-swatch" style="background: #7C6119;"></div>
+        <div class="palette-info">
+          <h4>Ulusaba</h4>
+          <p>Africa &bull; #7C6119</p>
+        </div>
+      </div>
+
+      <!-- Caribbean -->
+      <div class="palette-card" onclick="setTheme('#00B3D2', 'Necker Island (Caribbean - BVI)')">
+        <div class="color-swatch" style="background: #00B3D2;"></div>
+        <div class="palette-info">
+          <h4>Necker Island</h4>
+          <p>Caribbean &bull; #00B3D2</p>
+        </div>
+      </div>
+
+      <div class="palette-card" onclick="setTheme('#2CB2A5', 'The Branson Beach Estate (Caribbean - Moskito)')">
+        <div class="color-swatch" style="background: #2CB2A5;"></div>
+        <div class="palette-info">
+          <h4>Branson Beach Estate</h4>
+          <p>Caribbean &bull; #2CB2A5</p>
+        </div>
+      </div>
+
+      <!-- Europe -->
+      <div class="palette-card" onclick="setTheme('#5F7361', 'Son Bunyola (Europe - Mallorca)')">
+        <div class="color-swatch" style="background: #5F7361;"></div>
+        <div class="palette-info">
+          <h4>Son Bunyola</h4>
+          <p>Europe &bull; #5F7361</p>
+        </div>
+      </div>
+
+      <div class="palette-card" onclick="setTheme('#365D9D', 'The Lodge (Europe - Switzerland)')">
+        <div class="color-swatch" style="background: #365D9D;"></div>
+        <div class="palette-info">
+          <h4>The Lodge</h4>
+          <p>Europe &bull; #365D9D</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Live Interactive Curtain Reveal Effect -->
+    <h2 class="section-title">2. Live Interactive "Curtain Reveal" Animation</h2>
+    <p class="section-subtitle">The signature theatrical reveal effect used across all photography and gallery modules:</p>
+    
+    <div class="showcase-panel">
+      <div class="curtain-controls">
+        <button class="btn btn-primary" onclick="triggerCurtain('left')">Play Left Curtain Reveal</button>
+        <button class="btn btn-outline" onclick="triggerCurtain('right')">Play Right Curtain Reveal</button>
+        <button class="btn btn-outline" onclick="resetCurtain()">Reset</button>
+      </div>
+
+      <div class="curtain-frame animating-left" id="curtainDemo">
+        <div class="curtain-overlay"></div>
+        <img src="../Africa/Mahali_Mzuri/images/eqqnqkcv_mahali-mzuri-lion-in-front-of-camp.jpg" alt="Curtain Reveal Demo">
+      </div>
+    </div>
+
+    <!-- 3. Asymmetric Editorial Split Layout -->
+    <h2 class="section-title">3. Editorial Split Layout & Typography Pairing</h2>
+    <p class="section-subtitle">Miller Banner display serif paired with Aktiv Grotesk modern interface copy:</p>
+    
+    <div class="split-layout">
+      <div class="split-text">
+        <div class="floating-badge">EXCLUSIVE SAFARI EXPERIENCE</div>
+        <h2>Where Untold Wilderness Meets Unrivalled Luxury</h2>
+        <p>Perched high on the rolling hills of the Maasai Mara, each tented luxury suite offers panoramic vantage points overlooking the great annual migration. The Virgin Limited Edition experience combines conservation, bespoke dining under the African stars, and effortless elegance.</p>
+        <div>
+          <button class="btn btn-primary">Discover The Reserve</button>
+        </div>
+      </div>
+      <div class="split-image">
+        <img src="../Africa/Mahali_Mzuri/images/omypdxe3_mahali-mzuri-camp-and-guides-2.jpg" alt="Mahali Mzuri Camp">
+      </div>
+    </div>
+
+    <!-- 4. FlexMasonry Staggered Gallery Preview -->
+    <h2 class="section-title">4. FlexMasonry Staggered Image Placement</h2>
+    <p class="section-subtitle">Alternating landscape and portrait photography with subtle hover zoom and gradient captions:</p>
+    
+    <div class="masonry-grid">
+      <div class="masonry-card" style="height: 380px;">
+        <img src="../Africa/Kasbah_Tamadot/images/4y2ieuz4_kasbah-tamadot-entrance-2.jpg" alt="Kasbah Tamadot">
+        <div class="masonry-caption">
+          <h4>Kasbah Tamadot</h4>
+          <p>Atlas Mountains &bull; Morocco</p>
+        </div>
+      </div>
+
+      <div class="masonry-card" style="height: 460px;">
+        <img src="../Caribbean/Necker_Island/images/itgla4pw_image-1-necker-island-aerial.jpg" alt="Necker Island">
+        <div class="masonry-caption">
+          <h4>Necker Island</h4>
+          <p>British Virgin Islands &bull; Caribbean</p>
+        </div>
+      </div>
+
+      <div class="masonry-card" style="height: 380px;">
+        <img src="../Europe/Son_Bunyola/images/tw5julqi_son-bunyola-hotel-landscape-aerial-sea-view.jpg" alt="Son Bunyola">
+        <div class="masonry-caption">
+          <h4>Son Bunyola</h4>
+          <p>Mallorca &bull; Europe</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function setTheme(hex, name) {
+      document.documentElement.style.setProperty('--brand-color', hex);
+      document.getElementById('currentPropertyBadge').innerText = name;
+      
+      document.querySelectorAll('.palette-card').forEach(card => {
+        card.classList.remove('active');
+      });
+      event.currentTarget.classList.add('active');
+    }
+
+    function triggerCurtain(direction) {
+      const frame = document.getElementById('curtainDemo');
+      frame.className = 'curtain-frame';
+      void frame.offsetWidth; // Force CSS reflow
+      frame.className = 'curtain-frame animating-' + direction;
+    }
+
+    function resetCurtain() {
+      const frame = document.getElementById('curtainDemo');
+      frame.className = 'curtain-frame';
+    }
+
+    // Shrink header on scroll
+    window.addEventListener('scroll', () => {
+      const nav = document.getElementById('navbar');
+      if (window.scrollY > 60) {
+        nav.style.padding = '12px 40px';
+        nav.style.boxShadow = '0 4px 15px rgba(0,0,0,0.06)';
+      } else {
+        nav.style.padding = '18px 40px';
+        nav.style.boxShadow = 'none';
+      }
+    });
+  </script>
+</body>
+</html>

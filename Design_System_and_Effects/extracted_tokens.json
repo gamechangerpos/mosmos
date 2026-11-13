@@ -1,0 +1,197 @@
+{
+  "brand": "Virgin Limited Edition",
+  "website": "https://www.virginlimitededition.com/",
+  "color_palette": {
+    "properties": {
+      "kasbah_tamadot": {
+        "name": "Kasbah Tamadot",
+        "region": "Africa (Morocco)",
+        "hex": "#B83C25",
+        "description": "Moroccan terracotta red / Atlas clay"
+      },
+      "mahali_mzuri": {
+        "name": "Mahali Mzuri",
+        "region": "Africa (Kenya)",
+        "hex": "#BA5F27",
+        "description": "Maasai Mara savannah ochre / warm spice"
+      },
+      "mont_rochelle": {
+        "name": "Mont Rochelle",
+        "region": "Africa (South Africa)",
+        "hex": "#8A8F64",
+        "description": "Franschhoek vineyard olive / valley sage"
+      },
+      "ulusaba": {
+        "name": "Ulusaba",
+        "region": "Africa (South Africa)",
+        "hex": "#7C6119",
+        "description": "Sabi Sand bushveld amber / golden safari earth"
+      },
+      "finch_hattons": {
+        "name": "Finch Hattons",
+        "region": "Africa (Kenya)",
+        "hex": "#4A4238",
+        "description": "Tsavo vintage canvas / safari leather"
+      },
+      "necker_island": {
+        "name": "Necker Island",
+        "region": "Caribbean (British Virgin Islands)",
+        "hex": "#00B3D2",
+        "description": "Caribbean barrier reef cyan / tropical azure"
+      },
+      "the_branson_beach_estate": {
+        "name": "The Branson Beach Estate",
+        "region": "Caribbean (Moskito Island, BVI)",
+        "hex": "#2CB2A5",
+        "description": "Moskito Island lagoon teal / turquoise sea"
+      },
+      "son_bunyola": {
+        "name": "Son Bunyola",
+        "region": "Europe (Mallorca, Spain)",
+        "hex": "#5F7361",
+        "description": "Tramuntana mountain pine / Mediterranean olive slate"
+      },
+      "the_lodge": {
+        "name": "The Lodge",
+        "region": "Europe (Verbier, Switzerland)",
+        "hex": "#365D9D",
+        "description": "Swiss alpine cobalt / glacier dusk blue"
+      }
+    },
+    "neutrals": {
+      "black": "#0f0f0f",
+      "pure_black": "#000000",
+      "white": "#ffffff",
+      "off_white_light": "#fefefe",
+      "off_white_soft": "#f6f6f6",
+      "badge_gray": "#ededed",
+      "border_gray": "#cacaca",
+      "text_muted": "#8a8a8a"
+    }
+  },
+  "typography": {
+    "primary_serif": {
+      "family": "miller-banner, Georgia, serif",
+      "provider": "Adobe Typekit (use.typekit.net/lih7vef.css)",
+      "weights": [300, 400, 700, 800],
+      "roles": {
+        "hero_title": {
+          "size": "45px",
+          "line_height": "50px",
+          "weight": "bold",
+          "margin_bottom": "13px"
+        },
+        "editorial_big_text": {
+          "size": "24px",
+          "line_height": "35px",
+          "weight": "300"
+        },
+        "card_heading": {
+          "size": "28px",
+          "line_height": "32px",
+          "weight": "bold",
+          "margin_bottom": "16px"
+        },
+        "booking_cta": {
+          "size": "30px",
+          "line_height": "1",
+          "weight": "900"
+        }
+      }
+    },
+    "primary_sans_serif": {
+      "family": "aktiv-grotesk, 'Helvetica Neue', Helvetica, Arial, sans-serif",
+      "provider": "Adobe Typekit (use.typekit.net/lih7vef.css)",
+      "weights": [300, 400, 500, 700, 900],
+      "roles": {
+        "body_default": {
+          "size": "14px",
+          "line_height": "24px",
+          "weight": "normal"
+        },
+        "editorial_subheading": {
+          "size": "20px",
+          "line_height": "30px",
+          "weight": "500"
+        },
+        "badge_pill": {
+          "size": "9px",
+          "weight": "500",
+          "text_transform": "uppercase",
+          "letter_spacing": "1.5px"
+        }
+      }
+    }
+  },
+  "animations": {
+    "keyframes": {
+      "animate_image_left_curtain": {
+        "from": "translateX(0)",
+        "to": "translateX(-110%)",
+        "duration": "0.9s",
+        "timing_function": "cubic-bezier(0.77, 0, 0.175, 1)"
+      },
+      "animate_image_right_curtain": {
+        "from": "translateX(0)",
+        "to": "translateX(110%)",
+        "duration": "0.9s",
+        "timing_function": "cubic-bezier(0.77, 0, 0.175, 1)"
+      },
+      "animate_image_reveal": {
+        "stages": {
+          "0%": { "opacity": 0, "transform": "scale(1.08)" },
+          "51.9%": { "opacity": 0, "transform": "scale(1.08)" },
+          "100%": { "opacity": 1, "transform": "scale(1)" }
+        },
+        "duration": "1.2s",
+        "timing_function": "ease-out"
+      }
+    },
+    "curtain_system": {
+      "container": "position: relative; overflow: hidden;",
+      "curtain_element": "position: absolute; z-index: 500; width: 100%; height: 100%; background-color: #ffffff;",
+      "trigger": "Triggered via IntersectionObserver upon 20% viewport entry"
+    }
+  },
+  "scrolling_effects": {
+    "header_shrink": {
+      "default_height": "90px",
+      "scrolled_height": "65px",
+      "threshold_px": 80,
+      "background_transition": "background-color 0.3s ease, box-shadow 0.3s ease",
+      "scrolled_shadow": "0 2px 12px rgba(0,0,0,0.06)"
+    },
+    "parallax": {
+      "hero_speed": 0.2,
+      "split_image_speed": 0.12
+    },
+    "scroll_reveal": {
+      "threshold": 0.15,
+      "root_margin": "0px 0px -50px 0px"
+    }
+  },
+  "layout_and_placement": {
+    "grid": {
+      "system": "Foundation Sites 6 (12 columns)",
+      "container_max_width": "1440px",
+      "gutters": "30px desktop, 16px mobile"
+    },
+    "masonry": {
+      "library": "FlexMasonry v0.2.3",
+      "desktop_columns": 3,
+      "tablet_columns": 2,
+      "mobile_columns": 1,
+      "staggered_heights": true
+    },
+    "hero_split": {
+      "ratio_desktop": "40% text, 60% imagery",
+      "ratio_mobile": "100% stacked"
+    },
+    "floating_badges": {
+      "position": "absolute",
+      "top": "-12px",
+      "left": "24px",
+      "box_shadow": "0 2px 8px rgba(0,0,0,0.12)"
+    }
+  }
+}
