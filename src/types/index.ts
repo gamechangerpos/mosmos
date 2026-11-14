@@ -123,7 +123,11 @@ export interface BusinessSettings {
   bookingNotificationsEnabled: boolean;
   statusNotificationsEnabled: boolean;
   customerConfirmationsEnabled: boolean;
-  providerType: 'firestore_queue' | 'resend' | 'emailjs' | 'smtp';
+  providerType: 'formsubmit' | 'emailjs' | 'firestore_queue' | 'resend' | 'smtp';
+  emailJsServiceId?: string;
+  emailJsTemplateId?: string;
+  emailJsPublicKey?: string;
+  resendApiKey?: string;
   updatedAt?: string;
 }
 
@@ -134,8 +138,9 @@ export interface NotificationLog {
   subject: string;
   type: 'customer_inquiry' | 'support_inquiry' | 'customer_booking' | 'support_booking' | 'status_update' | 'test';
   reference: string;
-  status: 'DELIVERED' | 'QUEUED' | 'FAILED';
+  status: 'DELIVERED' | 'SENT_TO_PROVIDER' | 'QUEUED' | 'FAILED';
   errorMessage?: string;
+  provider?: string;
 }
 
 export interface AnalyticsEvent {

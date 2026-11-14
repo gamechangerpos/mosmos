@@ -79,7 +79,11 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   const [settingsError, setSettingsError] = useState<string | null>(null);
   const [testEmailRecipient, setTestEmailRecipient] = useState('gamechangerpos@gmail.com');
   const [testEmailSending, setTestEmailSending] = useState(false);
-  const [testEmailSuccess, setTestEmailSuccess] = useState(false);
+  const [testEmailResult, setTestEmailResult] = useState<{
+    success: boolean;
+    status: NotificationLog['status'];
+    message: string;
+  } | null>(null);
   const [notificationLogs, setNotificationLogs] = useState<NotificationLog[]>([]);
 
   // Analytics State
@@ -208,15 +212,19 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
 
   const handleSendTestEmail = async () => {
     setTestEmailSending(true);
-    setTestEmailSuccess(false);
+    setTestEmailResult(null);
     try {
-      await EmailService.sendTestEmail(testEmailRecipient);
-      setTestEmailSuccess(true);
+      const res = await EmailService.sendTestEmail(testEmailRecipient);
+      setTestEmailResult(res);
       const logs = await EmailService.getNotificationLogs();
       setNotificationLogs(logs);
-      setTimeout(() => setTestEmailSuccess(false), 4000);
-    } catch (err) {
-      console.error(err);
+      setTimeout(() => setTestEmailResult(null), 9000);
+    } catch (err: any) {
+      setTestEmailResult({
+        success: false,
+        status: 'FAILED',
+        message: err?.message || 'Unexpected test dispatch failure'
+      });
     } finally {
       setTestEmailSending(false);
     }
@@ -493,47 +501,59 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#D9D0C2]/50">
-                      {filteredInquiries.map((inq) => {
-                        const isSelected = selectedInquiry?.reference === inq.reference;
-                        return (
-                          <tr 
-                            key={inq.reference} 
-                            onClick={() => handleSelectInquiry(inq)}
-                            className={`hover:bg-[#F7F4ED] cursor-pointer transition-colors ${
-                              isSelected ? 'bg-[#F7F4ED] font-medium' : ''
-                            }`}
-                          >
-                            <td className="py-3 font-mono font-bold text-[#78634B]">{inq.reference}</td>
-                            <td className="py-3">
-                              <div className="font-medium text-[#20221F]">{inq.customerName}</div>
-                              <div className="text-[10px] text-[#20221F]/50">{inq.customerEmail}</div>
-                            </td>
-                            <td className="py-3 text-[#20221F]/70">{inq.destinations?.join(', ') || 'Custom'}</td>
-                            <td className="py-3">
-                              <span className={`inline-block px-2 py-0.5 text-[9px] uppercase tracking-wider font-semibold rounded-sm ${
-                                inq.status === 'Confirmed' || inq.status === 'CONFIRMED' ? 'bg-emerald-100 text-emerald-800' :
-                                inq.status === 'Quotation prepared' || inq.status === 'APPROVED' ? 'bg-amber-100 text-amber-800' :
-                                inq.status === 'AWAITING_PAYMENT' || inq.status === 'Deposit pending' ? 'bg-indigo-100 text-indigo-800' :
-                                inq.status === 'REJECTED' || inq.status === 'Cancelled' ? 'bg-rose-100 text-rose-800' :
-                                'bg-stone-200 text-stone-800'
-                              }`}>
-                                {inq.status}
-                              </span>
-                            </td>
-                            <td className="py-3 text-right">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleSelectInquiry(inq);
-                                }}
-                                className="p-1 hover:text-[#78634B] transition-colors"
-                              >
-                                <Eye className="w-4 h-4" />
-                              </button>
-                            </td>
-                          </tr>
-                        );
-                      })}
+                      {filteredInquiries.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="py-12 text-center text-[#20221F]/50">
+                            <Compass className="w-8 h-8 text-[#78634B]/30 mx-auto mb-2" />
+                            <p className="font-serif text-sm text-[#20221F] font-medium">No Safari Inquiries Found</p>
+                            <p className="text-[11px] text-[#20221F]/60 mt-1">
+                              Real safari requests submitted by guests on the website will appear here in real time.
+                            </p>
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredInquiries.map((inq) => {
+                          const isSelected = selectedInquiry?.reference === inq.reference;
+                          return (
+                            <tr 
+                              key={inq.reference} 
+                              onClick={() => handleSelectInquiry(inq)}
+                              className={`hover:bg-[#F7F4ED] cursor-pointer transition-colors ${
+                                isSelected ? 'bg-[#F7F4ED] font-medium' : ''
+                              }`}
+                            >
+                              <td className="py-3 font-mono font-bold text-[#78634B]">{inq.reference}</td>
+                              <td className="py-3">
+                                <div className="font-medium text-[#20221F]">{inq.customerName}</div>
+                                <div className="text-[10px] text-[#20221F]/50">{inq.customerEmail}</div>
+                              </td>
+                              <td className="py-3 text-[#20221F]/70">{inq.destinations?.join(', ') || 'Custom'}</td>
+                              <td className="py-3">
+                                <span className={`inline-block px-2 py-0.5 text-[9px] uppercase tracking-wider font-semibold rounded-sm ${
+                                  inq.status === 'Confirmed' || inq.status === 'CONFIRMED' ? 'bg-emerald-100 text-emerald-800' :
+                                  inq.status === 'Quotation prepared' || inq.status === 'APPROVED' ? 'bg-amber-100 text-amber-800' :
+                                  inq.status === 'AWAITING_PAYMENT' || inq.status === 'Deposit pending' ? 'bg-indigo-100 text-indigo-800' :
+                                  inq.status === 'REJECTED' || inq.status === 'Cancelled' ? 'bg-rose-100 text-rose-800' :
+                                  'bg-stone-200 text-stone-800'
+                                }`}>
+                                  {inq.status}
+                                </span>
+                              </td>
+                              <td className="py-3 text-right">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleSelectInquiry(inq);
+                                  }}
+                                  className="p-1 hover:text-[#78634B] transition-colors"
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
                     </tbody>
                   </table>
                 </div>
@@ -853,6 +873,84 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   </div>
                 </div>
 
+                {/* Email Delivery Gateway Configuration */}
+                <div className="pt-4 border-t border-[#D9D0C2]">
+                  <h3 className="font-serif text-lg font-light text-[#20221F] mb-1">
+                    Email Delivery Gateway
+                  </h3>
+                  <p className="text-[11px] text-[#20221F]/60 mb-3">
+                    Choose how transactional emails and booking alerts are dispatched to customer and staff mailboxes.
+                  </p>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-[10px] uppercase tracking-wider text-[#78634B] font-semibold mb-1">
+                        Active Delivery Gateway Provider
+                      </label>
+                      <select
+                        value={settings.providerType || 'formsubmit'}
+                        onChange={(e) => setSettings({ ...settings, providerType: e.target.value as any })}
+                        className="w-full bg-[#F7F4ED] border border-[#D9D0C2] p-2.5 text-xs focus:outline-none focus:border-[#78634B]"
+                      >
+                        <option value="formsubmit">FormSubmit Gateway (Recommended & 100% Free - Zero Server Required)</option>
+                        <option value="emailjs">EmailJS Service (Client-Side Direct Delivery to Customer + Admin)</option>
+                        <option value="firestore_queue">Cloud Firestore Mail Queue (Firebase Blaze Extension)</option>
+                      </select>
+                    </div>
+
+                    {settings.providerType === 'emailjs' && (
+                      <div className="p-4 bg-[#F7F4ED] border border-[#D9D0C2] space-y-3">
+                        <div className="text-[11px] text-[#78634B] font-medium">
+                          Configure your free EmailJS account credentials (from emailjs.com):
+                        </div>
+                        <div>
+                          <label className="block text-[10px] uppercase tracking-wider text-[#20221F]/70 font-semibold mb-1">
+                            EmailJS Service ID
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. service_xxxxxxx"
+                            value={settings.emailJsServiceId || ''}
+                            onChange={(e) => setSettings({ ...settings, emailJsServiceId: e.target.value })}
+                            className="w-full bg-white border border-[#D9D0C2] p-2 text-xs focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] uppercase tracking-wider text-[#20221F]/70 font-semibold mb-1">
+                            EmailJS Template ID
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. template_xxxxxxx"
+                            value={settings.emailJsTemplateId || ''}
+                            onChange={(e) => setSettings({ ...settings, emailJsTemplateId: e.target.value })}
+                            className="w-full bg-white border border-[#D9D0C2] p-2 text-xs focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] uppercase tracking-wider text-[#20221F]/70 font-semibold mb-1">
+                            EmailJS Public Key
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. user_xxxxxxx / xxxxxxx"
+                            value={settings.emailJsPublicKey || ''}
+                            onChange={(e) => setSettings({ ...settings, emailJsPublicKey: e.target.value })}
+                            className="w-full bg-white border border-[#D9D0C2] p-2 text-xs focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    )}
+
+                    {(settings.providerType === 'formsubmit' || !settings.providerType) && (
+                      <div className="p-3 bg-amber-50/70 border border-amber-200/80 text-[11px] text-amber-900 leading-relaxed">
+                        <strong>FormSubmit Zero-Backend Relay:</strong> Delivers all customer safari inquiries and test notifications directly to <strong>{settings.supportEmail || 'gamechangerpos@gmail.com'}</strong> over HTTPS.
+                        The first time a new email address receives a submission, FormSubmit sends a 1-click confirmation email. Simply click <em>"Activate Form"</em> in Gmail to authorize incoming submissions.
+                      </div>
+                    )}
+                  </div>
+                </div>
+
                 <div className="pt-4">
                   <button
                     type="submit"
@@ -876,7 +974,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   </h3>
                 </div>
                 <p className="text-xs text-[#20221F]/60 mb-4 leading-relaxed">
-                  Send a real diagnostic email to verify that your configured recipient and delivery queue are operating correctly.
+                  Send a real live email to verify that your configured recipient and delivery gateway are operating correctly.
                 </p>
 
                 <div className="space-y-3">
@@ -899,13 +997,28 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     className="w-full py-2.5 bg-[#78634B] hover:bg-[#20221F] text-white text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer flex items-center justify-center gap-2"
                   >
                     <Mail className="w-3.5 h-3.5" />
-                    <span>{testEmailSending ? 'Dispatching...' : 'Send Test Notification'}</span>
+                    <span>{testEmailSending ? 'Dispatching Live Request...' : 'Send Test Notification'}</span>
                   </button>
 
-                  {testEmailSuccess && (
-                    <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
-                      <CheckCircle2 className="w-4 h-4 shrink-0" />
-                      <span>Test notification dispatched to queue & recorded in audit log!</span>
+                  {testEmailResult && (
+                    <div className={`p-3 border text-xs flex items-start gap-2 ${
+                      testEmailResult.status === 'DELIVERED'
+                        ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                        : testEmailResult.status === 'SENT_TO_PROVIDER'
+                        ? 'bg-amber-50 border-amber-200 text-amber-900'
+                        : 'bg-rose-50 border-rose-200 text-rose-800'
+                    }`}>
+                      {testEmailResult.status === 'DELIVERED' ? (
+                        <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600 mt-0.5" />
+                      ) : (
+                        <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                      )}
+                      <div>
+                        <div className="font-semibold uppercase text-[10px] tracking-wider mb-0.5">
+                          Status: {testEmailResult.status}
+                        </div>
+                        <div className="leading-relaxed">{testEmailResult.message}</div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -918,13 +1031,13 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                     Notification Audit Trail
                   </h3>
                   <span className="text-[10px] text-[#20221F]/50 font-mono">
-                    Firestore: notificationLogs
+                    Firestore & Local Audit
                   </span>
                 </div>
 
                 {notificationLogs.length === 0 ? (
                   <p className="text-xs text-[#20221F]/50 py-6 text-center">
-                    No notifications logged yet. Dispatches will be recorded here automatically.
+                    No notifications logged yet. Dispatches will be recorded here automatically with live provider statuses.
                   </p>
                 ) : (
                   <div className="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
@@ -936,7 +1049,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                           </span>
                           <span className={`px-1.5 py-0.5 text-[9px] font-semibold uppercase ${
                             log.status === 'DELIVERED' ? 'bg-emerald-100 text-emerald-800' :
-                            log.status === 'QUEUED' ? 'bg-amber-100 text-amber-800' :
+                            log.status === 'SENT_TO_PROVIDER' ? 'bg-amber-100 text-amber-800' :
+                            log.status === 'QUEUED' ? 'bg-indigo-100 text-indigo-800' :
                             'bg-rose-100 text-rose-800'
                           }`}>
                             {log.status}
@@ -947,6 +1061,11 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                           <span>To: {log.recipient}</span>
                           <span>{new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
+                        {log.errorMessage && (
+                          <div className="text-[10px] text-amber-800/80 bg-amber-50/60 p-1.5 mt-1.5 rounded-sm">
+                            {log.errorMessage}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -995,9 +1114,14 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
             {/* Core Metrics Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               <div className="bg-white p-5 border border-[#D9D0C2] shadow-sm">
-                <span className="text-[10px] uppercase tracking-wider text-[#78634B] font-semibold block mb-1">
-                  Total Site Visits
-                </span>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] uppercase tracking-wider text-[#78634B] font-semibold">
+                    Total Site Visits
+                  </span>
+                  <span className="text-[9px] bg-[#F7F4ED] text-[#78634B] px-1.5 py-0.5 border border-[#D9D0C2] font-mono">
+                    Source: GA4 Sessions
+                  </span>
+                </div>
                 <span className="font-serif text-3xl font-bold text-[#20221F]">
                   {analyticsData.totalVisits.toLocaleString()}
                 </span>
@@ -1007,9 +1131,14 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
               </div>
 
               <div className="bg-white p-5 border border-[#D9D0C2] shadow-sm">
-                <span className="text-[10px] uppercase tracking-wider text-[#78634B] font-semibold block mb-1">
-                  Unique Visitors (Est.)
-                </span>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] uppercase tracking-wider text-[#78634B] font-semibold">
+                    Unique Visitors (Est.)
+                  </span>
+                  <span className="text-[9px] bg-[#F7F4ED] text-[#78634B] px-1.5 py-0.5 border border-[#D9D0C2] font-mono">
+                    Source: Active Sessions
+                  </span>
+                </div>
                 <span className="font-serif text-3xl font-bold text-[#20221F]">
                   {analyticsData.uniqueVisitors.toLocaleString()}
                 </span>
@@ -1019,9 +1148,14 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
               </div>
 
               <div className="bg-white p-5 border border-[#D9D0C2] shadow-sm">
-                <span className="text-[10px] uppercase tracking-wider text-[#78634B] font-semibold block mb-1">
-                  Total Page Views
-                </span>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] uppercase tracking-wider text-[#78634B] font-semibold">
+                    Total Page Views
+                  </span>
+                  <span className="text-[9px] bg-[#F7F4ED] text-[#78634B] px-1.5 py-0.5 border border-[#D9D0C2] font-mono">
+                    Source: Telemetry Events
+                  </span>
+                </div>
                 <span className="font-serif text-3xl font-bold text-[#20221F]">
                   {analyticsData.pageViews.toLocaleString()}
                 </span>
@@ -1031,9 +1165,14 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
               </div>
 
               <div className="bg-white p-5 border border-[#D9D0C2] shadow-sm">
-                <span className="text-[10px] uppercase tracking-wider text-emerald-700 font-semibold block mb-1">
-                  Conversion Rate
-                </span>
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-[10px] uppercase tracking-wider text-emerald-700 font-semibold">
+                    Conversion Rate
+                  </span>
+                  <span className="text-[9px] bg-emerald-50 text-emerald-800 px-1.5 py-0.5 border border-emerald-200 font-mono">
+                    Source: Cloud Firestore Records
+                  </span>
+                </div>
                 <span className="font-serif text-3xl font-bold text-emerald-900">
                   {analyticsData.conversionRate}%
                 </span>
@@ -1066,62 +1205,72 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 </div>
               </div>
 
-              {/* Responsive SVG Chart */}
-              <div className="h-56 w-full">
-                <svg className="w-full h-full" viewBox="0 0 700 200" preserveAspectRatio="none">
-                  {/* Grid lines */}
-                  <line x1="0" y1="50" x2="700" y2="50" stroke="#EBE5DA" strokeDasharray="3 3" />
-                  <line x1="0" y1="100" x2="700" y2="100" stroke="#EBE5DA" strokeDasharray="3 3" />
-                  <line x1="0" y1="150" x2="700" y2="150" stroke="#EBE5DA" strokeDasharray="3 3" />
-                  
-                  {/* Bars for visitors */}
-                  {analyticsData.dailyTrends.map((d, idx) => {
-                    const barWidth = 700 / (analyticsData.dailyTrends.length * 2);
-                    const x = idx * (700 / analyticsData.dailyTrends.length) + 10;
-                    const maxVis = Math.max(...analyticsData.dailyTrends.map(t => t.visitors), 40);
-                    const barHeight = (d.visitors / maxVis) * 140;
-                    const y = 180 - barHeight;
+              {/* Responsive SVG Chart or Clean Zero State */}
+              {analyticsData.dailyTrends.length === 0 || analyticsData.dailyTrends.every(d => d.visitors === 0 && d.pageViews === 0) ? (
+                <div className="h-56 flex flex-col items-center justify-center text-center p-6 bg-[#F7F4ED]/50 border border-dashed border-[#D9D0C2]">
+                  <BarChart3 className="w-8 h-8 text-[#78634B]/40 mb-2" />
+                  <p className="font-serif text-[#20221F] text-sm font-medium">No Traffic Events Recorded Yet</p>
+                  <p className="text-[11px] text-[#20221F]/60 max-w-sm mt-1">
+                    Live sessions and page views will dynamically plot on this timeline chart as guests visit MOS MOS Safaris.
+                  </p>
+                </div>
+              ) : (
+                <div className="h-56 w-full">
+                  <svg className="w-full h-full" viewBox="0 0 700 200" preserveAspectRatio="none">
+                    {/* Grid lines */}
+                    <line x1="0" y1="50" x2="700" y2="50" stroke="#EBE5DA" strokeDasharray="3 3" />
+                    <line x1="0" y1="100" x2="700" y2="100" stroke="#EBE5DA" strokeDasharray="3 3" />
+                    <line x1="0" y1="150" x2="700" y2="150" stroke="#EBE5DA" strokeDasharray="3 3" />
+                    
+                    {/* Bars for visitors */}
+                    {analyticsData.dailyTrends.map((d, idx) => {
+                      const barWidth = 700 / (analyticsData.dailyTrends.length * 2);
+                      const x = idx * (700 / analyticsData.dailyTrends.length) + 10;
+                      const maxVis = Math.max(...analyticsData.dailyTrends.map(t => t.visitors), 10);
+                      const barHeight = (d.visitors / maxVis) * 140;
+                      const y = 180 - barHeight;
 
-                    return (
-                      <g key={d.date}>
-                        <rect
-                          x={x}
-                          y={y}
-                          width={barWidth}
-                          height={barHeight}
-                          fill="#78634B"
-                          opacity="0.8"
-                          rx="2"
-                        />
-                        <text
-                          x={x + barWidth / 2}
-                          y="196"
-                          textAnchor="middle"
-                          fontSize="9"
-                          fill="#8A857A"
-                        >
-                          {d.date.slice(5)}
-                        </text>
-                      </g>
-                    );
-                  })}
+                      return (
+                        <g key={d.date}>
+                          <rect
+                            x={x}
+                            y={y}
+                            width={barWidth}
+                            height={barHeight}
+                            fill="#78634B"
+                            opacity="0.8"
+                            rx="2"
+                          />
+                          <text
+                            x={x + barWidth / 2}
+                            y="196"
+                            textAnchor="middle"
+                            fontSize="9"
+                            fill="#8A857A"
+                          >
+                            {d.date.slice(5)}
+                          </text>
+                        </g>
+                      );
+                    })}
 
-                  {/* Trendline for page views */}
-                  {analyticsData.dailyTrends.length > 1 && (
-                    <polyline
-                      fill="none"
-                      stroke="#B69A68"
-                      strokeWidth="2.5"
-                      points={analyticsData.dailyTrends.map((d, idx) => {
-                        const maxViews = Math.max(...analyticsData.dailyTrends.map(t => t.pageViews), 150);
-                        const x = idx * (700 / analyticsData.dailyTrends.length) + 20;
-                        const y = 180 - (d.pageViews / maxViews) * 150;
-                        return `${x},${y}`;
-                      }).join(' ')}
-                    />
-                  )}
-                </svg>
-              </div>
+                    {/* Trendline for page views */}
+                    {analyticsData.dailyTrends.length > 1 && (
+                      <polyline
+                        fill="none"
+                        stroke="#B69A68"
+                        strokeWidth="2.5"
+                        points={analyticsData.dailyTrends.map((d, idx) => {
+                          const maxViews = Math.max(...analyticsData.dailyTrends.map(t => t.pageViews), 20);
+                          const x = idx * (700 / analyticsData.dailyTrends.length) + 20;
+                          const y = 180 - (d.pageViews / maxViews) * 150;
+                          return `${x},${y}`;
+                        }).join(' ')}
+                      />
+                    )}
+                  </svg>
+                </div>
+              )}
             </div>
 
             {/* Popular Content & Destination Breakdowns */}
@@ -1132,14 +1281,18 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 <h4 className="font-serif text-lg font-light text-[#20221F] mb-3 pb-2 border-b border-[#D9D0C2]">
                   Most Visited Pages
                 </h4>
-                <div className="space-y-2.5 text-xs">
-                  {analyticsData.topPages.map((p) => (
-                    <div key={p.path} className="flex items-center justify-between">
-                      <span className="font-mono text-[#78634B] truncate max-w-[180px]">{p.label}</span>
-                      <span className="font-bold text-[#20221F]">{p.views} views</span>
-                    </div>
-                  ))}
-                </div>
+                {analyticsData.topPages.length === 0 ? (
+                  <p className="text-xs text-[#20221F]/50 py-6 text-center">No page views recorded yet</p>
+                ) : (
+                  <div className="space-y-2.5 text-xs">
+                    {analyticsData.topPages.map((p) => (
+                      <div key={p.path} className="flex items-center justify-between">
+                        <span className="font-mono text-[#78634B] truncate max-w-[180px]">{p.label}</span>
+                        <span className="font-bold text-[#20221F]">{p.views} views</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Popular Destinations */}
@@ -1147,14 +1300,18 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 <h4 className="font-serif text-lg font-light text-[#20221F] mb-3 pb-2 border-b border-[#D9D0C2]">
                   Popular Destinations
                 </h4>
-                <div className="space-y-2.5 text-xs">
-                  {analyticsData.topDestinations.map((d) => (
-                    <div key={d.name} className="flex items-center justify-between">
-                      <span className="text-[#20221F]">{d.name}</span>
-                      <span className="font-bold text-[#78634B]">{d.views} views</span>
-                    </div>
-                  ))}
-                </div>
+                {analyticsData.topDestinations.length === 0 ? (
+                  <p className="text-xs text-[#20221F]/50 py-6 text-center">No destination views recorded yet</p>
+                ) : (
+                  <div className="space-y-2.5 text-xs">
+                    {analyticsData.topDestinations.map((d) => (
+                      <div key={d.name} className="flex items-center justify-between">
+                        <span className="text-[#20221F]">{d.name}</span>
+                        <span className="font-bold text-[#78634B]">{d.views} views</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Most Viewed Packages */}
@@ -1162,14 +1319,18 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 <h4 className="font-serif text-lg font-light text-[#20221F] mb-3 pb-2 border-b border-[#D9D0C2]">
                   Top Safari Expeditions
                 </h4>
-                <div className="space-y-2.5 text-xs">
-                  {analyticsData.topTours.map((t) => (
-                    <div key={t.name} className="flex items-center justify-between">
-                      <span className="text-[#20221F] truncate max-w-[170px]">{t.name}</span>
-                      <span className="font-bold text-[#20221F]">{t.views} views</span>
-                    </div>
-                  ))}
-                </div>
+                {analyticsData.topTours.length === 0 ? (
+                  <p className="text-xs text-[#20221F]/50 py-6 text-center">No safari package views recorded yet</p>
+                ) : (
+                  <div className="space-y-2.5 text-xs">
+                    {analyticsData.topTours.map((t) => (
+                      <div key={t.name} className="flex items-center justify-between">
+                        <span className="text-[#20221F] truncate max-w-[170px]">{t.name}</span>
+                        <span className="font-bold text-[#20221F]">{t.views} views</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
             </div>
@@ -1183,22 +1344,26 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   <Monitor className="w-4 h-4 text-[#78634B]" />
                   <span>Device Category</span>
                 </h4>
-                <div className="space-y-3 text-xs">
-                  {analyticsData.deviceBreakdown.map((dev) => (
-                    <div key={dev.device}>
-                      <div className="flex justify-between text-[11px] mb-1">
-                        <span className="capitalize">{dev.device}</span>
-                        <span className="font-semibold">{dev.percentage}% ({dev.count})</span>
+                {analyticsData.deviceBreakdown.length === 0 ? (
+                  <p className="text-xs text-[#20221F]/50 py-6 text-center">No device telemetry logged yet</p>
+                ) : (
+                  <div className="space-y-3 text-xs">
+                    {analyticsData.deviceBreakdown.map((dev) => (
+                      <div key={dev.device}>
+                        <div className="flex justify-between text-[11px] mb-1">
+                          <span className="capitalize">{dev.device}</span>
+                          <span className="font-semibold">{dev.percentage}% ({dev.count})</span>
+                        </div>
+                        <div className="w-full bg-[#F7F4ED] h-2 rounded-full overflow-hidden">
+                          <div
+                            className="bg-[#78634B] h-full"
+                            style={{ width: `${dev.percentage}%` }}
+                          />
+                        </div>
                       </div>
-                      <div className="w-full bg-[#F7F4ED] h-2 rounded-full overflow-hidden">
-                        <div
-                          className="bg-[#78634B] h-full"
-                          style={{ width: `${dev.percentage}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Browsers */}
@@ -1207,22 +1372,26 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   <Globe className="w-4 h-4 text-[#78634B]" />
                   <span>Top Browsers</span>
                 </h4>
-                <div className="space-y-3 text-xs">
-                  {analyticsData.browserBreakdown.map((b) => (
-                    <div key={b.browser}>
-                      <div className="flex justify-between text-[11px] mb-1">
-                        <span>{b.browser}</span>
-                        <span className="font-semibold">{b.percentage}% ({b.count})</span>
+                {analyticsData.browserBreakdown.length === 0 ? (
+                  <p className="text-xs text-[#20221F]/50 py-6 text-center">No browser sessions logged yet</p>
+                ) : (
+                  <div className="space-y-3 text-xs">
+                    {analyticsData.browserBreakdown.map((b) => (
+                      <div key={b.browser}>
+                        <div className="flex justify-between text-[11px] mb-1">
+                          <span>{b.browser}</span>
+                          <span className="font-semibold">{b.percentage}% ({b.count})</span>
+                        </div>
+                        <div className="w-full bg-[#F7F4ED] h-2 rounded-full overflow-hidden">
+                          <div
+                            className="bg-[#B69A68] h-full"
+                            style={{ width: `${b.percentage}%` }}
+                          />
+                        </div>
                       </div>
-                      <div className="w-full bg-[#F7F4ED] h-2 rounded-full overflow-hidden">
-                        <div
-                          className="bg-[#B69A68] h-full"
-                          style={{ width: `${b.percentage}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Referral Sources */}
@@ -1231,14 +1400,18 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                   <TrendingUp className="w-4 h-4 text-[#78634B]" />
                   <span>Referring Channels</span>
                 </h4>
-                <div className="space-y-2.5 text-xs">
-                  {analyticsData.referralSources.map((s) => (
-                    <div key={s.source} className="flex items-center justify-between">
-                      <span className="text-[#20221F]">{s.source}</span>
-                      <span className="font-bold text-[#78634B]">{s.count} visits</span>
-                    </div>
-                  ))}
-                </div>
+                {analyticsData.referralSources.length === 0 ? (
+                  <p className="text-xs text-[#20221F]/50 py-6 text-center">No referral channels logged yet</p>
+                ) : (
+                  <div className="space-y-2.5 text-xs">
+                    {analyticsData.referralSources.map((s) => (
+                      <div key={s.source} className="flex items-center justify-between">
+                        <span className="text-[#20221F]">{s.source}</span>
+                        <span className="font-bold text-[#78634B]">{s.count} visits</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
             </div>

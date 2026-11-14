@@ -2,6 +2,7 @@ import { logEvent } from 'firebase/analytics';
 import { doc, getDoc, setDoc, increment, serverTimestamp } from 'firebase/firestore';
 import { analytics, db } from '../lib/firebase';
 import { AnalyticsEvent } from '../types';
+import { StorageService } from './storageService';
 
 const SESSION_KEY = 'mos_mos_analytics_session_id';
 const ANALYTICS_LOCAL_KEY = 'mos_mos_analytics_local_data_v1';
@@ -155,8 +156,46 @@ export const AnalyticsService = {
   },
 
   // ============================================================================
-  // 2. LOCAL AGGREGATE STORAGE & RETRIEVAL
+  // 2. LOCAL AGGREGATE STORAGE & RETRIEVAL (100% REAL DATA ONLY)
   // ============================================================================
+  getInitialAnalyticsData() {
+    return {
+      totalVisits: 0,
+      uniqueVisitors: 0,
+      pageViews: 0,
+      inquiryCount: 0,
+      bookingCount: 0,
+      pageCounts: {} as Record<string, number>,
+      destinationCounts: {} as Record<string, number>,
+      tourCounts: {} as Record<string, number>,
+      deviceCounts: {} as Record<string, number>,
+      browserCounts: {} as Record<string, number>,
+      referrerCounts: {} as Record<string, number>,
+      dailyStats: {} as Record<string, { visitors: number; pageViews: number; conversions: number }>
+    };
+  },
+
+  getStoredData(): any {
+    try {
+      const stored = localStorage.getItem(ANALYTICS_LOCAL_KEY);
+      if (!stored) {
+        const fresh = this.getInitialAnalyticsData();
+        localStorage.setItem(ANALYTICS_LOCAL_KEY, JSON.stringify(fresh));
+        return fresh;
+      }
+      const raw = JSON.parse(stored);
+      // Purge any stale mock baseline data (e.g. 184 visits, 682 pageViews) from previous sessions
+      if (raw.totalVisits === 184 || raw.pageViews === 682 || !raw.dailyStats) {
+        const fresh = this.getInitialAnalyticsData();
+        localStorage.setItem(ANALYTICS_LOCAL_KEY, JSON.stringify(fresh));
+        return fresh;
+      }
+      return raw;
+    } catch {
+      return this.getInitialAnalyticsData();
+    }
+  },
+
   recordLocalAggregate(data: {
     path: string;
     today: string;
@@ -167,28 +206,32 @@ export const AnalyticsService = {
     referrer: string;
   }): void {
     try {
-      const stored = localStorage.getItem(ANALYTICS_LOCAL_KEY);
-      const raw = stored ? JSON.parse(stored) : this.getInitialAnalyticsData();
+      const raw = this.getStoredData();
 
-      raw.pageViews += 1;
+      raw.pageViews = (raw.pageViews || 0) + 1;
       if (data.isNewSession) {
-        raw.totalVisits += 1;
-        raw.uniqueVisitors += 1;
+        raw.totalVisits = (raw.totalVisits || 0) + 1;
+        raw.uniqueVisitors = (raw.uniqueVisitors || 0) + 1;
       }
 
       // Page counts
+      if (!raw.pageCounts) raw.pageCounts = {};
       raw.pageCounts[data.path] = (raw.pageCounts[data.path] || 0) + 1;
 
       // Device counts
+      if (!raw.deviceCounts) raw.deviceCounts = {};
       raw.deviceCounts[data.device] = (raw.deviceCounts[data.device] || 0) + 1;
 
       // Browser counts
+      if (!raw.browserCounts) raw.browserCounts = {};
       raw.browserCounts[data.browser] = (raw.browserCounts[data.browser] || 0) + 1;
 
       // Referrer counts
+      if (!raw.referrerCounts) raw.referrerCounts = {};
       raw.referrerCounts[data.referrer] = (raw.referrerCounts[data.referrer] || 0) + 1;
 
       // Daily trend
+      if (!raw.dailyStats) raw.dailyStats = {};
       if (!raw.dailyStats[data.today]) {
         raw.dailyStats[data.today] = { visitors: 0, pageViews: 0, conversions: 0 };
       }
@@ -205,8 +248,8 @@ export const AnalyticsService = {
 
   recordDestinationViewLocal(destinationName: string): void {
     try {
-      const stored = localStorage.getItem(ANALYTICS_LOCAL_KEY);
-      const raw = stored ? JSON.parse(stored) : this.getInitialAnalyticsData();
+      const raw = this.getStoredData();
+      if (!raw.destinationCounts) raw.destinationCounts = {};
       raw.destinationCounts[destinationName] = (raw.destinationCounts[destinationName] || 0) + 1;
       localStorage.setItem(ANALYTICS_LOCAL_KEY, JSON.stringify(raw));
     } catch {}
@@ -214,8 +257,8 @@ export const AnalyticsService = {
 
   recordTourViewLocal(tourTitle: string): void {
     try {
-      const stored = localStorage.getItem(ANALYTICS_LOCAL_KEY);
-      const raw = stored ? JSON.parse(stored) : this.getInitialAnalyticsData();
+      const raw = this.getStoredData();
+      if (!raw.tourCounts) raw.tourCounts = {};
       raw.tourCounts[tourTitle] = (raw.tourCounts[tourTitle] || 0) + 1;
       localStorage.setItem(ANALYTICS_LOCAL_KEY, JSON.stringify(raw));
     } catch {}
@@ -224,11 +267,11 @@ export const AnalyticsService = {
   recordConversionLocal(type: 'inquiry' | 'booking'): void {
     try {
       const today = getTodayDateString();
-      const stored = localStorage.getItem(ANALYTICS_LOCAL_KEY);
-      const raw = stored ? JSON.parse(stored) : this.getInitialAnalyticsData();
-      if (type === 'inquiry') raw.inquiryCount += 1;
-      if (type === 'booking') raw.bookingCount += 1;
+      const raw = this.getStoredData();
+      if (type === 'inquiry') raw.inquiryCount = (raw.inquiryCount || 0) + 1;
+      if (type === 'booking') raw.bookingCount = (raw.bookingCount || 0) + 1;
 
+      if (!raw.dailyStats) raw.dailyStats = {};
       if (!raw.dailyStats[today]) {
         raw.dailyStats[today] = { visitors: 1, pageViews: 1, conversions: 0 };
       }
@@ -254,99 +297,26 @@ export const AnalyticsService = {
     }
   },
 
-  getInitialAnalyticsData() {
-    // Seed with realistic baseline analytics from launch so charts look vibrant and informative
-    const today = new Date();
-    const dailyStats: Record<string, { visitors: number; pageViews: number; conversions: number }> = {};
-    
-    // Generate previous 7 days baseline
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(today);
-      d.setDate(d.getDate() - i);
-      const ds = d.toISOString().split('T')[0];
-      dailyStats[ds] = {
-        visitors: Math.floor(18 + Math.random() * 24),
-        pageViews: Math.floor(64 + Math.random() * 80),
-        conversions: Math.floor(Math.random() * 3)
-      };
-    }
-
-    return {
-      totalVisits: 184,
-      uniqueVisitors: 142,
-      pageViews: 682,
-      inquiryCount: 14,
-      bookingCount: 5,
-      pageCounts: {
-        '/': 240,
-        '/destinations': 128,
-        '/destinations/uganda': 86,
-        '/safari-tours': 78,
-        '/destinations/tanzania': 64,
-        '/stays': 42,
-        '/plan-trip': 44
-      },
-      destinationCounts: {
-        'Uganda': 142,
-        'Tanzania': 118,
-        'Rwanda': 96,
-        'Kenya': 84,
-        'South Africa': 68,
-        'Dubai': 32
-      },
-      tourCounts: {
-        '10-Day Uganda Primate & Savanna': 88,
-        '8-Day Serengeti Great Migration': 74,
-        '7-Day Rwanda Gorillas & Nyungwe': 52,
-        '12-Day Grand East Africa Circuit': 46
-      },
-      deviceCounts: {
-        'desktop': 112,
-        'mobile': 64,
-        'tablet': 8
-      },
-      browserCounts: {
-        'Chrome': 114,
-        'Safari': 46,
-        'Firefox': 16,
-        'Edge': 8
-      },
-      referrerCounts: {
-        'Direct': 92,
-        'Google Search': 64,
-        'Social Media': 18,
-        'Organic Search': 10
-      },
-      dailyStats
-    };
-  },
-
   // ============================================================================
-  // 3. AGGREGATED SUMMARY FOR ADMIN DASHBOARD
+  // 3. AGGREGATED SUMMARY FOR ADMIN DASHBOARD (NO MOCK DATA)
   // ============================================================================
   getSummary(dateFilter: 'today' | '7d' | '30d' | 'all' = '7d'): AnalyticsSummary {
-    let data: any = null;
-    try {
-      const stored = localStorage.getItem(ANALYTICS_LOCAL_KEY);
-      data = stored ? JSON.parse(stored) : this.getInitialAnalyticsData();
-    } catch {
-      data = this.getInitialAnalyticsData();
-    }
+    const data = this.getStoredData();
 
     const todayStr = getTodayDateString();
-    const todayStats = data.dailyStats[todayStr] || { visitors: 0, pageViews: 0, conversions: 0 };
+    const todayStats = (data.dailyStats && data.dailyStats[todayStr]) || { visitors: 0, pageViews: 0, conversions: 0 };
 
-    // Calculate time metrics
+    // Calculate time metrics from actual sessions
     const now = new Date();
     let visitorsWeek = 0;
     let visitorsMonth = 0;
     let visitorsYear = data.totalVisits || 0;
 
-    Object.entries(data.dailyStats).forEach(([dateStr, stat]: [string, any]) => {
+    Object.entries(data.dailyStats || {}).forEach(([dateStr, stat]: [string, any]) => {
       const d = new Date(dateStr);
       const diffDays = (now.getTime() - d.getTime()) / (1000 * 3600 * 24);
-      if (diffDays <= 7) visitorsWeek += stat.visitors || 0;
-      if (diffDays <= 30) visitorsMonth += stat.visitors || 0;
+      if (diffDays <= 7) visitorsWeek += (stat.visitors || 0);
+      if (diffDays <= 30) visitorsMonth += (stat.visitors || 0);
     });
 
     // Top Pages
@@ -379,19 +349,19 @@ export const AnalyticsService = {
       .slice(-14);
 
     // Device breakdown with %
-    const totalDevices = Object.values(data.deviceCounts || {}).reduce((a: any, b: any) => a + b, 0) as number || 1;
+    const totalDevices = Object.values(data.deviceCounts || {}).reduce((a: any, b: any) => a + b, 0) as number || 0;
     const deviceBreakdown = Object.entries(data.deviceCounts || {}).map(([device, count]) => ({
       device,
       count: count as number,
-      percentage: Math.round(((count as number) / totalDevices) * 100)
+      percentage: totalDevices > 0 ? Math.round(((count as number) / totalDevices) * 100) : 0
     }));
 
     // Browser breakdown
-    const totalBrowsers = Object.values(data.browserCounts || {}).reduce((a: any, b: any) => a + b, 0) as number || 1;
+    const totalBrowsers = Object.values(data.browserCounts || {}).reduce((a: any, b: any) => a + b, 0) as number || 0;
     const browserBreakdown = Object.entries(data.browserCounts || {}).map(([browser, count]) => ({
       browser,
       count: count as number,
-      percentage: Math.round(((count as number) / totalBrowsers) * 100)
+      percentage: totalBrowsers > 0 ? Math.round(((count as number) / totalBrowsers) * 100) : 0
     }));
 
     // Referral sources
@@ -400,10 +370,16 @@ export const AnalyticsService = {
       count: count as number
     })).sort((a, b) => b.count - a.count);
 
-    // Conversion rate
-    const totalVisits = data.totalVisits || 1;
-    const totalConversions = (data.inquiryCount || 0) + (data.bookingCount || 0);
-    const conversionRate = Math.round((totalConversions / totalVisits) * 1000) / 10;
+    // Real inquiry & booking counts dynamically derived from storage
+    const realInquiries = StorageService.getTripInquiries().length;
+    const realBookings = StorageService.getTourBookings().length;
+    const totalConversions = realInquiries + realBookings;
+
+    // Conversion rate based strictly on real visitors and actual inquiries/bookings
+    const totalVisits = data.totalVisits || 0;
+    const conversionRate = totalVisits > 0 
+      ? Math.round((totalConversions / totalVisits) * 1000) / 10 
+      : 0;
 
     return {
       totalVisits: data.totalVisits || 0,
@@ -413,8 +389,8 @@ export const AnalyticsService = {
       visitorsThisMonth: visitorsMonth || visitorsWeek || 0,
       visitorsThisYear: visitorsYear || visitorsMonth || 0,
       pageViews: data.pageViews || 0,
-      inquiryCount: data.inquiryCount || 0,
-      bookingCount: data.bookingCount || 0,
+      inquiryCount: realInquiries,
+      bookingCount: realBookings,
       conversionRate,
       topPages,
       topDestinations,
