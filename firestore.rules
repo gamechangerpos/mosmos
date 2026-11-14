@@ -100,10 +100,33 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // 8. Website Settings
+    // 8. Website & Business Settings
     match /settings/{settingId} {
       allow read: if true;
       allow write: if isAdmin();
+    }
+
+    match /businessSettings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // 9. Automated Email Queue & Audit Logs
+    match /mail/{mailId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /notificationLogs/{logId} {
+      allow read, delete: if isAdmin();
+      allow create: if true;
+      allow update: if isAdmin();
+    }
+
+    // 10. Visitor Analytics Aggregation (Privacy-Preserving Counters)
+    match /analyticsDaily/{dayId} {
+      allow read: if isAdmin();
+      allow write: if true;
     }
   }
 }

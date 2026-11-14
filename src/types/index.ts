@@ -99,15 +99,56 @@ export interface Accommodation {
 }
 
 export type InquiryStatus = 
+  | 'PENDING_REVIEW'
+  | 'UNDER_REVIEW'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'AWAITING_PAYMENT'
+  | 'CONFIRMED'
+  | 'CANCELLED'
+  | 'COMPLETED'
   | 'Inquiry received'
   | 'Under review'
-  | 'Awaiting supplier confirmation'
   | 'Quotation prepared'
-  | 'Awaiting customer approval'
-  | 'Awaiting payment'
-  | 'Confirmed'
-  | 'Cancelled'
-  | 'Completed';
+  | 'Deposit pending';
+
+export interface BusinessSettings {
+  businessName: string;
+  supportEmail: string;
+  adminEmail: string;
+  phone: string;
+  address: string;
+  websiteUrl: string;
+  inquiryNotificationsEnabled: boolean;
+  bookingNotificationsEnabled: boolean;
+  statusNotificationsEnabled: boolean;
+  customerConfirmationsEnabled: boolean;
+  providerType: 'firestore_queue' | 'resend' | 'emailjs' | 'smtp';
+  updatedAt?: string;
+}
+
+export interface NotificationLog {
+  id: string;
+  timestamp: string;
+  recipient: string;
+  subject: string;
+  type: 'customer_inquiry' | 'support_inquiry' | 'customer_booking' | 'support_booking' | 'status_update' | 'test';
+  reference: string;
+  status: 'DELIVERED' | 'QUEUED' | 'FAILED';
+  errorMessage?: string;
+}
+
+export interface AnalyticsEvent {
+  id: string;
+  eventType: 'page_view' | 'destination_view' | 'tour_view' | 'inquiry_submitted' | 'booking_submitted' | 'login' | 'signup';
+  page: string;
+  path: string;
+  timestamp: string;
+  sessionId: string;
+  device: 'desktop' | 'mobile' | 'tablet';
+  referrer: string;
+  metadata?: Record<string, any>;
+}
 
 export interface TripInquiry {
   id: string;

@@ -23,6 +23,7 @@ import { AdminPage } from './pages/AdminPage';
 import { LegalPage } from './pages/LegalPage';
 import { AuthPage } from './pages/AuthPage';
 import { AccountPage } from './pages/AccountPage';
+import { AnalyticsService } from './services/analyticsService';
 
 export default function App() {
   const [currentPath, setCurrentPath] = useState<string>(() => {
@@ -38,6 +39,11 @@ export default function App() {
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
+
+  // Track page view analytics on every route change
+  useEffect(() => {
+    AnalyticsService.trackPageView(currentPath);
+  }, [currentPath]);
 
   const navigate = (path: string) => {
     if (path === currentPath) return;

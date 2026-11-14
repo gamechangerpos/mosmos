@@ -1,5 +1,6 @@
 import { TripInquiry, FlightInquiry, TourBookingInquiry, InquiryStatus } from '../types';
 import { FirestoreService } from './firestoreService';
+import { EmailService } from './emailService';
 
 const TRIP_INQUIRIES_KEY = 'omoja_trip_inquiries_v1';
 const FLIGHT_INQUIRIES_KEY = 'omoja_flight_inquiries_v1';
@@ -135,6 +136,11 @@ export const StorageService = {
       console.warn('[StorageService] Cloud sync error:', err);
     });
 
+    // Automated Dual Email Notification (Customer confirmation + Support team alert)
+    EmailService.handleNewInquiry(newInquiry, customerId).catch((err) => {
+      console.warn('[StorageService] Email notification dispatch error:', err);
+    });
+
     return newInquiry;
   },
 
@@ -143,6 +149,7 @@ export const StorageService = {
     const index = inquiries.findIndex(i => i.reference === reference);
     if (index === -1) return false;
 
+    const oldStatus = inquiries[index].status;
     inquiries[index].status = status;
     if (statusNotes) inquiries[index].statusNotes = statusNotes;
     if (quotedAmount !== undefined) inquiries[index].quotedAmount = quotedAmount;
@@ -157,6 +164,13 @@ export const StorageService = {
     FirestoreService.updateTripInquiryStatus(reference, status, statusNotes, adminNote, quotedAmount).catch((err) => {
       console.warn('[StorageService] Cloud sync update error:', err);
     });
+
+    // Automated Status Change Email Notification to Customer
+    if (oldStatus !== status) {
+      EmailService.handleStatusChange(inquiries[index], oldStatus, status, adminNote || statusNotes).catch((err) => {
+        console.warn('[StorageService] Status update email error:', err);
+      });
+    }
 
     return true;
   },
@@ -224,6 +238,11 @@ export const StorageService = {
     // Sync to Cloud Firestore
     FirestoreService.saveTourBooking(inquiry, customerId).catch((err) => {
       console.warn('[StorageService] Cloud sync error:', err);
+    });
+
+    // Automated Dual Email Notification for Tour Booking (Customer Receipt + Support Alert)
+    EmailService.handleNewBooking(newRecord, customerId).catch((err) => {
+      console.warn('[StorageService] Booking email notification error:', err);
     });
 
     return newRecord;
