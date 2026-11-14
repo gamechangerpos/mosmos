@@ -1,16 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { StorageService } from '../services/storageService';
 import { TripInquiry, InquiryStatus } from '../types';
-import { ShieldCheck, Lock, Search, Filter, Download, Plus, Check, RefreshCw, Eye, Edit3, Trash2 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { ShieldCheck, Lock, Search, Filter, Download, Plus, Check, RefreshCw, Eye, Edit3, Trash2, Cloud, UserCheck } from 'lucide-react';
 
 interface AdminPageProps {
   onNavigate: (path: string) => void;
 }
 
 export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
+  const { user, isAdmin, loginWithGoogle, logout } = useAuth();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncStatus, setSyncStatus] = useState<string | null>(null);
 
   const [inquiries, setInquiries] = useState<TripInquiry[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -31,16 +35,43 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
 
   useEffect(() => {
     loadData();
-  }, []);
+    // Auto-authenticate if logged in as Firebase Admin
+    if (isAdmin) {
+      setIsAuthenticated(true);
+    }
+  }, [isAdmin]);
+
+  const handleSyncFirestore = async () => {
+    setIsSyncing(true);
+    setSyncStatus('Syncing with Cloud Firestore...');
+    try {
+      const synced = await StorageService.syncWithFirestore();
+      setInquiries(synced);
+      setSyncStatus('Synchronized successfully with Firestore');
+      setTimeout(() => setSyncStatus(null), 3000);
+    } catch (err) {
+      setSyncStatus('Sync failed, using offline records');
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    // Default demo passcode for review
     if (pin === '1234' || pin === 'admin') {
       setIsAuthenticated(true);
       setPinError(false);
     } else {
       setPinError(true);
+    }
+  };
+
+  const handleGoogleAdminLogin = async () => {
+    try {
+      await loginWithGoogle();
+      setIsAuthenticated(true);
+    } catch (err: any) {
+      console.warn('Google sign-in error:', err);
     }
   };
 
@@ -66,7 +97,6 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
     );
 
     loadData();
-    // Update local selected
     const updated = StorageService.findInquiryByReference(selectedInquiry.reference);
     setSelectedInquiry(updated);
     setEditAdminNote('');
@@ -112,7 +142,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
               MOS MOS Safaris Operations Portal
             </h1>
             <p className="text-xs text-[#20221F]/70 font-light mt-1">
-              Authorized personnel access to customer booking ledger and inquiries.
+              Authorized personnel access to customer booking ledger, inquiries, and Cloud Firestore.
             </p>
           </div>
 
@@ -131,22 +161,40 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
               />
               {pinError && (
                 <span className="text-[11px] text-rose-700 mt-1 block">
-                  Incorrect passcode. Use demo PIN 1234.
+                  Incorrect passcode. Use PIN: 1234.
                 </span>
               )}
             </div>
 
             <button
               type="submit"
-              className="w-full py-2.5 bg-[#20221F] hover:bg-[#343C32] text-[#F7F4ED] text-xs font-semibold uppercase tracking-wider transition-colors shadow"
+              className="w-full py-2.5 bg-[#20221F] hover:bg-[#343C32] text-[#F7F4ED] text-xs font-semibold uppercase tracking-wider transition-colors shadow cursor-pointer"
             >
               Sign In to Dashboard
             </button>
           </form>
 
+          <div className="relative my-6 text-center">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-[#D9D0C2]" />
+            </div>
+            <span className="relative bg-white px-3 text-[10px] uppercase tracking-wider text-[#20221F]/40 font-semibold">
+              Or sign in with Google
+            </span>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleGoogleAdminLogin}
+            className="w-full py-2.5 px-4 border border-[#D9D0C2] bg-white hover:bg-[#F7F4ED] text-[#20221F] text-xs font-medium flex items-center justify-center gap-2 transition-colors cursor-pointer"
+          >
+            <UserCheck className="w-4 h-4 text-[#78634B]" />
+            <span>Sign In with Admin Google Account</span>
+          </button>
+
           <div className="mt-6 pt-4 border-t border-[#D9D0C2] text-center">
             <span className="text-[11px] text-[#20221F]/60">
-              For testing and demonstration, use passcode: <strong className="text-[#20221F]">1234</strong>
+              For testing and instant demonstration, enter passcode: <strong className="text-[#20221F]">1234</strong>
             </span>
           </div>
         </div>
@@ -157,12 +205,12 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   return (
     <div className="pt-24 pb-20 bg-[#F7F4ED]">
       {/* Header */}
-      <div className="bg-[#20221F] text-[#F7F4ED] py-10 px-4 sm:px-6 lg:px-8 border-b border-[#343C32]">
+      <div className="bg-[#20221F] text-[#F7F4ED] py-8 px-4 sm:px-6 lg:px-8 border-b border-[#343C32]">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-xs uppercase tracking-[0.25em] text-[#B69A68] font-semibold mb-1">
               <ShieldCheck className="w-4 h-4" />
-              <span>MOS MOS Safaris Backoffice</span>
+              <span>MOS MOS Safaris Backoffice · Cloud Firestore Active</span>
             </div>
             <h1 className="font-serif text-3xl font-light text-[#F7F4ED]">
               Expedition & Inquiry Management
@@ -171,20 +219,38 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
 
           <div className="flex items-center gap-3">
             <button
+              onClick={handleSyncFirestore}
+              disabled={isSyncing}
+              className="px-4 py-2 bg-[#78634B] hover:bg-[#B69A68] text-white text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-colors cursor-pointer"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+              <span>{isSyncing ? 'Syncing...' : 'Sync Firestore'}</span>
+            </button>
+            <button
               onClick={handleExportData}
-              className="px-4 py-2 bg-[#2A2E28] hover:bg-[#343C32] text-[#D9D0C2] text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 border border-white/10"
+              className="px-4 py-2 bg-[#2A2E28] hover:bg-[#343C32] text-[#D9D0C2] text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 border border-white/10 cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export JSON</span>
             </button>
             <button
-              onClick={() => setIsAuthenticated(false)}
-              className="px-4 py-2 bg-transparent hover:bg-white/10 text-white text-xs font-semibold uppercase tracking-wider border border-white/20"
+              onClick={() => {
+                setIsAuthenticated(false);
+                logout();
+              }}
+              className="px-4 py-2 bg-transparent hover:bg-white/10 text-white text-xs font-semibold uppercase tracking-wider border border-white/20 cursor-pointer"
             >
               Lock / Sign Out
             </button>
           </div>
         </div>
+
+        {syncStatus && (
+          <div className="max-w-7xl mx-auto mt-3 text-xs text-[#B69A68] flex items-center gap-2">
+            <Cloud className="w-3.5 h-3.5" />
+            <span>{syncStatus}</span>
+          </div>
+        )}
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -219,70 +285,67 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
           <div className="lg:col-span-7 bg-white border border-[#D9D0C2] shadow-sm p-6">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mb-6 pb-4 border-b border-[#D9D0C2]">
               <div className="relative w-full sm:w-64">
-                <Search className="w-3.5 h-3.5 text-[#20221F]/40 absolute left-3 top-3" />
                 <input
                   type="text"
-                  placeholder="Search name, ref, email..."
+                  placeholder="Search by client, ref, or email..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-[#F7F4ED] border border-[#D9D0C2] text-xs pl-8 pr-3 py-2 text-[#20221F] focus:outline-none focus:border-[#78634B]"
+                  className="w-full bg-[#F7F4ED] border border-[#D9D0C2] text-xs px-3 py-2 pl-8 focus:outline-none focus:border-[#78634B]"
                 />
+                <Search className="w-3.5 h-3.5 text-[#20221F]/40 absolute left-2.5 top-2.5" />
               </div>
 
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full sm:w-auto bg-[#F7F4ED] border border-[#D9D0C2] text-xs px-3 py-2 text-[#20221F] focus:outline-none"
-              >
-                <option value="all">All Statuses</option>
-                <option value="Inquiry received">Inquiry received</option>
-                <option value="Under review">Under review</option>
-                <option value="Quotation prepared">Quotation prepared</option>
-                <option value="Confirmed">Confirmed</option>
-                <option value="Completed">Completed</option>
-                <option value="Cancelled">Cancelled</option>
-              </select>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Filter className="w-3.5 h-3.5 text-[#78634B]" />
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="bg-[#F7F4ED] border border-[#D9D0C2] text-xs px-2.5 py-1.5 focus:outline-none"
+                >
+                  <option value="all">All Statuses</option>
+                  <option value="Inquiry received">Inquiry received</option>
+                  <option value="Under review">Under review</option>
+                  <option value="Quotation prepared">Quotation prepared</option>
+                  <option value="Deposit pending">Deposit pending</option>
+                  <option value="Confirmed">Confirmed</option>
+                </select>
+              </div>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="border-b border-[#D9D0C2] text-[10px] uppercase tracking-wider text-[#78634B] font-semibold">
-                    <th className="py-2.5">Reference</th>
-                    <th className="py-2.5">Client</th>
-                    <th className="py-2.5">Destination</th>
-                    <th className="py-2.5">Status</th>
-                    <th className="py-2.5 text-right">Action</th>
+                  <tr className="border-b border-[#D9D0C2] text-[10px] uppercase tracking-wider text-[#20221F]/50">
+                    <th className="pb-3 font-semibold">Reference</th>
+                    <th className="pb-3 font-semibold">Customer</th>
+                    <th className="pb-3 font-semibold">Destinations</th>
+                    <th className="pb-3 font-semibold">Status</th>
+                    <th className="pb-3 font-semibold text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#D9D0C2]/50">
                   {filteredInquiries.map((inq) => {
                     const isSelected = selectedInquiry?.reference === inq.reference;
                     return (
-                      <tr
-                        key={inq.id}
+                      <tr 
+                        key={inq.reference} 
                         onClick={() => handleSelectInquiry(inq)}
-                        className={`cursor-pointer transition-colors ${
-                          isSelected ? 'bg-[#EFECE3]' : 'hover:bg-[#F7F4ED]'
+                        className={`hover:bg-[#F7F4ED] cursor-pointer transition-colors ${
+                          isSelected ? 'bg-[#F7F4ED] font-medium' : ''
                         }`}
                       >
-                        <td className="py-3 font-mono font-bold text-[#20221F]">
-                          {inq.reference}
-                        </td>
+                        <td className="py-3 font-mono font-bold text-[#78634B]">{inq.reference}</td>
                         <td className="py-3">
-                          <span className="font-semibold block">{inq.customerName}</span>
-                          <span className="text-[10px] text-[#20221F]/60">{inq.customerEmail}</span>
+                          <div className="font-medium text-[#20221F]">{inq.customerName}</div>
+                          <div className="text-[10px] text-[#20221F]/50">{inq.customerEmail}</div>
                         </td>
+                        <td className="py-3 text-[#20221F]/70">{inq.destinations?.join(', ') || 'Custom'}</td>
                         <td className="py-3">
-                          {inq.destinations.join(', ')}
-                        </td>
-                        <td className="py-3">
-                          <span className={`px-2 py-0.5 text-[10px] font-semibold ${
-                            inq.status === 'Confirmed'
-                              ? 'bg-emerald-100 text-emerald-900'
-                              : inq.status === 'Quotation prepared'
-                              ? 'bg-[#B69A68]/20 text-[#78634B]'
-                              : 'bg-gray-100 text-gray-800'
+                          <span className={`inline-block px-2 py-0.5 text-[9px] uppercase tracking-wider font-semibold rounded-sm ${
+                            inq.status === 'Confirmed' ? 'bg-emerald-100 text-emerald-800' :
+                            inq.status === 'Quotation prepared' ? 'bg-amber-100 text-amber-800' :
+                            inq.status === 'Deposit pending' ? 'bg-indigo-100 text-indigo-800' :
+                            'bg-stone-200 text-stone-800'
                           }`}>
                             {inq.status}
                           </span>
@@ -293,9 +356,9 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                               e.stopPropagation();
                               handleSelectInquiry(inq);
                             }}
-                            className="text-[11px] font-semibold text-[#78634B] hover:underline"
+                            className="p-1 hover:text-[#78634B] transition-colors"
                           >
-                            Manage
+                            <Eye className="w-4 h-4" />
                           </button>
                         </td>
                       </tr>
@@ -306,143 +369,138 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
             </div>
           </div>
 
-          {/* Manage Inquiries Editor */}
-          <div className="lg:col-span-5">
+          {/* Inquiry Detail Drawer & Status Editor */}
+          <div className="lg:col-span-5 bg-white border border-[#D9D0C2] shadow-sm p-6">
             {selectedInquiry ? (
-              <div className="bg-white border border-[#D9D0C2] shadow-sm p-6 sticky top-28">
-                <div className="flex items-center justify-between border-b border-[#D9D0C2] pb-4 mb-4">
+              <div>
+                <div className="flex items-start justify-between pb-4 border-b border-[#D9D0C2] mb-6">
                   <div>
-                    <span className="text-[10px] uppercase tracking-wider text-[#78634B] font-semibold block">
-                      Active File
-                    </span>
-                    <h3 className="font-mono text-xl font-bold text-[#20221F]">
+                    <span className="font-mono text-xs font-bold text-[#78634B] bg-[#F7F4ED] px-2 py-0.5 border border-[#D9D0C2]">
                       {selectedInquiry.reference}
+                    </span>
+                    <h3 className="font-serif text-2xl font-light text-[#20221F] mt-2">
+                      {selectedInquiry.customerName}
                     </h3>
+                    <p className="text-xs text-[#20221F]/60">
+                      {selectedInquiry.customerEmail} · {selectedInquiry.customerPhone}
+                    </p>
                   </div>
-                  <button
-                    onClick={() => onNavigate(`/booking/${selectedInquiry.reference}`)}
-                    className="text-xs text-[#78634B] hover:underline flex items-center gap-1"
-                  >
-                    <Eye className="w-3.5 h-3.5" />
-                    <span>Public View</span>
-                  </button>
+                  <span className="text-[10px] text-[#20221F]/40">
+                    {new Date(selectedInquiry.createdAt).toLocaleDateString()}
+                  </span>
                 </div>
 
-                <div className="text-xs space-y-2 mb-6 text-[#20221F]/80 pb-4 border-b border-[#D9D0C2]">
+                {/* Itinerary details */}
+                <div className="grid grid-cols-2 gap-3 text-xs mb-6 bg-[#F7F4ED]/50 p-4 border border-[#D9D0C2]/50">
                   <div>
-                    <span className="font-semibold text-[#20221F]">Client: </span>
-                    <span>{selectedInquiry.customerName} ({selectedInquiry.customerEmail} | {selectedInquiry.customerPhone || 'No phone'})</span>
+                    <span className="text-[10px] uppercase tracking-wider text-[#20221F]/50 block">Destinations</span>
+                    <p className="font-medium text-[#20221F]">{selectedInquiry.destinations?.join(', ') || 'Custom'}</p>
                   </div>
                   <div>
-                    <span className="font-semibold text-[#20221F]">Destinations: </span>
-                    <span>{selectedInquiry.destinations.join(' & ')}</span>
+                    <span className="text-[10px] uppercase tracking-wider text-[#20221F]/50 block">Travel Dates</span>
+                    <p className="font-medium text-[#20221F]">{selectedInquiry.travelDates || 'Flexible'}</p>
                   </div>
                   <div>
-                    <span className="font-semibold text-[#20221F]">Dates & Group: </span>
-                    <span>{selectedInquiry.travelDates} ({selectedInquiry.adultsCount} Adults, {selectedInquiry.childrenCount} Children)</span>
+                    <span className="text-[10px] uppercase tracking-wider text-[#20221F]/50 block">Guests</span>
+                    <p className="font-medium text-[#20221F]">
+                      {selectedInquiry.adultsCount} Adults {selectedInquiry.childrenCount ? `, ${selectedInquiry.childrenCount} Children` : ''}
+                    </p>
                   </div>
-                  {selectedInquiry.notes && (
-                    <div className="p-2.5 bg-[#F7F4ED] border border-[#D9D0C2] italic text-[11px]">
-                      "{selectedInquiry.notes}"
-                    </div>
-                  )}
+                  <div>
+                    <span className="text-[10px] uppercase tracking-wider text-[#20221F]/50 block">Budget Range</span>
+                    <p className="font-medium text-[#20221F]">{selectedInquiry.budgetRange}</p>
+                  </div>
                 </div>
+
+                {/* Customer Notes */}
+                {selectedInquiry.notes && (
+                  <div className="mb-6">
+                    <span className="text-[10px] uppercase tracking-wider text-[#78634B] font-semibold block mb-1">
+                      Guest Preferences & Requirements:
+                    </span>
+                    <p className="text-xs text-[#20221F]/80 font-light bg-[#F7F4ED] p-3 border border-[#D9D0C2]">
+                      "{selectedInquiry.notes}"
+                    </p>
+                  </div>
+                )}
 
                 {/* Status Update Form */}
-                <form onSubmit={handleSaveStatus} className="space-y-4">
+                <form onSubmit={handleSaveStatus} className="space-y-4 pt-4 border-t border-[#D9D0C2]">
                   <div>
-                    <label className="text-[10px] uppercase tracking-wider text-[#78634B] font-semibold block mb-1">
-                      Update Workflow Status
+                    <label className="text-[10px] uppercase tracking-wider text-[#20221F]/70 font-semibold block mb-1">
+                      Update Expedition Status
                     </label>
                     <select
                       value={editStatus}
                       onChange={(e) => setEditStatus(e.target.value as InquiryStatus)}
-                      className="w-full bg-[#F7F4ED] border border-[#D9D0C2] text-xs px-3 py-2 text-[#20221F] font-medium"
+                      className="w-full bg-[#F7F4ED] border border-[#D9D0C2] text-xs px-3 py-2 focus:outline-none"
                     >
                       <option value="Inquiry received">Inquiry received</option>
                       <option value="Under review">Under review</option>
-                      <option value="Awaiting supplier confirmation">Awaiting supplier confirmation</option>
                       <option value="Quotation prepared">Quotation prepared</option>
-                      <option value="Awaiting customer approval">Awaiting customer approval</option>
-                      <option value="Awaiting payment">Awaiting payment</option>
+                      <option value="Deposit pending">Deposit pending</option>
                       <option value="Confirmed">Confirmed</option>
-                      <option value="Completed">Completed</option>
-                      <option value="Cancelled">Cancelled</option>
+                      <option value="Archived">Archived</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="text-[10px] uppercase tracking-wider text-[#78634B] font-semibold block mb-1">
+                    <label className="text-[10px] uppercase tracking-wider text-[#20221F]/70 font-semibold block mb-1">
                       Quoted Total Amount ($ USD)
                     </label>
                     <input
                       type="number"
-                      value={editQuotedAmount}
+                      placeholder="e.g. 14500"
+                      value={editQuotedAmount || ''}
                       onChange={(e) => setEditQuotedAmount(Number(e.target.value))}
-                      className="w-full bg-[#F7F4ED] border border-[#D9D0C2] text-xs px-3 py-2 text-[#20221F]"
+                      className="w-full bg-[#F7F4ED] border border-[#D9D0C2] text-xs px-3 py-2 focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="text-[10px] uppercase tracking-wider text-[#78634B] font-semibold block mb-1">
-                      Status Message to Client (Visible on Tracking Page)
+                    <label className="text-[10px] uppercase tracking-wider text-[#20221F]/70 font-semibold block mb-1">
+                      Customer-Facing Status Note (Visible in tracker)
                     </label>
                     <textarea
                       rows={2}
+                      placeholder="e.g. Gorilla permits allocated with UWA. Itinerary sent to your email."
                       value={editStatusNotes}
                       onChange={(e) => setEditStatusNotes(e.target.value)}
-                      placeholder="e.g. Gorilla permits locked with UWA. Draft proposal sent."
-                      className="w-full bg-[#F7F4ED] border border-[#D9D0C2] text-xs p-2.5 text-[#20221F]"
+                      className="w-full bg-[#F7F4ED] border border-[#D9D0C2] text-xs p-2.5 focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="text-[10px] uppercase tracking-wider text-[#78634B] font-semibold block mb-1">
-                      Append Private Internal Admin Note
+                    <label className="text-[10px] uppercase tracking-wider text-[#20221F]/70 font-semibold block mb-1">
+                      Internal Admin Audit Note (Appends timestamp)
                     </label>
                     <input
                       type="text"
+                      placeholder="e.g. Spoke with lodge manager; 2 rooms provisionally held."
                       value={editAdminNote}
                       onChange={(e) => setEditAdminNote(e.target.value)}
-                      placeholder="e.g. Assigned to senior guide Joseph; dietary preferences confirmed"
-                      className="w-full bg-[#F7F4ED] border border-[#D9D0C2] text-xs px-3 py-2 text-[#20221F]"
+                      className="w-full bg-[#F7F4ED] border border-[#D9D0C2] text-xs px-3 py-2 focus:outline-none"
                     />
                   </div>
 
-                  {saveSuccess && (
-                    <div className="p-2 bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs text-center flex items-center justify-center gap-1.5">
-                      <Check className="w-3.5 h-3.5" />
-                      <span>Status updated in persistent ledger!</span>
-                    </div>
-                  )}
-
-                  <button
-                    type="submit"
-                    className="w-full py-2.5 bg-[#20221F] hover:bg-[#343C32] text-[#F7F4ED] text-xs font-semibold uppercase tracking-wider transition-colors shadow"
-                  >
-                    Save Status & Notify Ledger
-                  </button>
-                </form>
-
-                {/* Audit notes history */}
-                {selectedInquiry.adminNotes && selectedInquiry.adminNotes.length > 0 && (
-                  <div className="mt-6 pt-4 border-t border-[#D9D0C2]">
-                    <span className="text-[10px] uppercase tracking-wider text-[#78634B] font-semibold block mb-2">
-                      Internal Notes Log
-                    </span>
-                    <ul className="space-y-1 text-[11px] text-[#20221F]/70 font-mono">
-                      {selectedInquiry.adminNotes.map((note, idx) => (
-                        <li key={idx} className="bg-[#F7F4ED] p-1.5 border border-[#D9D0C2]">
-                          {note}
-                        </li>
-                      ))}
-                    </ul>
+                  <div className="flex items-center justify-between pt-2">
+                    <button
+                      type="submit"
+                      className="px-5 py-2.5 bg-[#20221F] hover:bg-[#78634B] text-white text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer"
+                    >
+                      Save to Ledger & Firestore
+                    </button>
+                    {saveSuccess && (
+                      <span className="text-xs text-emerald-700 flex items-center gap-1">
+                        <Check className="w-4 h-4" /> Saved!
+                      </span>
+                    )}
                   </div>
-                )}
+                </form>
               </div>
             ) : (
-              <div className="bg-white border border-[#D9D0C2] p-8 text-center text-xs text-[#20221F]/60">
-                Select an inquiry from the left table to inspect details, set quotations, and update operational status.
+              <div className="text-center py-20 text-xs text-[#20221F]/50">
+                Select an inquiry from the table to view details and update quotation status.
               </div>
             )}
           </div>

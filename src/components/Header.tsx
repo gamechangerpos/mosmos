@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, User } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 interface HeaderProps {
   currentPath: string;
@@ -11,6 +12,7 @@ export const Header: React.FC<HeaderProps> = ({
   currentPath,
   onNavigate
 }) => {
+  const { user } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -55,7 +57,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Brand Wordmark — scales down on scroll (Virgin LE pattern) */}
           <button
             onClick={() => handleNav('/')}
-            className="group text-left flex flex-col focus-visible:outline-2 focus-visible:outline-[#B69A68] transition-all duration-500"
+            className="group text-left flex flex-col focus-visible:outline-2 focus-visible:outline-[#B69A68] transition-all duration-500 cursor-pointer"
           >
             <span
               className={`font-serif font-light tracking-[0.22em] uppercase transition-all duration-500 ${
@@ -88,7 +90,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   key={link.path}
                   onClick={() => handleNav(link.path)}
-                  className={`px-4 py-2 text-[11px] uppercase tracking-[0.15em] font-medium transition-all duration-300 cursor-pointer relative ${
+                  className={`px-3.5 py-2 text-[11px] uppercase tracking-[0.15em] font-medium transition-all duration-300 cursor-pointer relative ${
                     isActive
                       ? showTransparent
                         ? 'text-[#B69A68] font-bold'
@@ -106,10 +108,25 @@ export const Header: React.FC<HeaderProps> = ({
               );
             })}
 
+            {/* Auth Link: Account or Sign In */}
+            <button
+              onClick={() => handleNav(user ? '/account' : '/login')}
+              className={`px-3.5 py-2 text-[11px] uppercase tracking-[0.15em] font-medium transition-all duration-300 cursor-pointer flex items-center gap-1.5 ${
+                currentPath === '/account' || currentPath === '/login'
+                  ? 'text-[#B69A68] font-bold'
+                  : showTransparent
+                  ? 'text-white/90 hover:text-[#B69A68]'
+                  : 'text-[#20221F]/70 hover:text-[#20221F]'
+              }`}
+            >
+              <User className="w-3.5 h-3.5 text-[#B69A68]" />
+              <span>{user ? (user.displayName ? user.displayName.split(' ')[0] : 'Account') : 'Sign In'}</span>
+            </button>
+
             {/* CTA Button — Virgin LE "Enquire" style */}
             <button
               onClick={() => handleNav('/plan-trip')}
-              className={`ml-3 px-5 py-2 text-[11px] uppercase tracking-[0.15em] font-semibold transition-all duration-300 cursor-pointer border ${
+              className={`ml-2 px-5 py-2 text-[11px] uppercase tracking-[0.15em] font-semibold transition-all duration-300 cursor-pointer border ${
                 showTransparent
                   ? 'border-white/40 text-white hover:bg-white hover:text-[#20221F]'
                   : 'border-[#20221F] text-[#20221F] hover:bg-[#20221F] hover:text-[#F7F4ED]'
@@ -122,7 +139,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Mobile Menu Toggle */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className={`md:hidden p-2 transition-colors ${
+            className={`md:hidden p-2 transition-colors cursor-pointer ${
               showTransparent ? 'text-white' : 'text-[#20221F]'
             }`}
             aria-label="Toggle menu"
@@ -134,7 +151,7 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-40 bg-[#F7F4ED] pt-24 px-6 md:hidden animate-fade-in">
+        <div className="fixed inset-0 z-40 bg-[#F7F4ED] pt-24 px-6 md:hidden animate-fade-in overflow-y-auto">
           <nav className="flex flex-col gap-1">
             {navLinks.map((link) => {
               const isActive =
@@ -152,6 +169,15 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
               );
             })}
+
+            <button
+              onClick={() => handleNav(user ? '/account' : '/login')}
+              className="text-left py-3 border-b border-[#D9D0C2]/50 font-serif text-2xl font-light text-[#78634B] flex items-center justify-between"
+            >
+              <span>{user ? 'My Guest Account' : 'Sign In / Register'}</span>
+              <User className="w-5 h-5 text-[#B69A68]" />
+            </button>
+
             <button
               onClick={() => handleNav('/plan-trip')}
               className="mt-6 w-full py-4 bg-[#20221F] text-[#F7F4ED] font-sans text-xs uppercase tracking-[0.2em] font-semibold"

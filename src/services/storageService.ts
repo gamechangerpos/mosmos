@@ -1,9 +1,9 @@
 import { TripInquiry, FlightInquiry, TourBookingInquiry, InquiryStatus } from '../types';
+import { FirestoreService } from './firestoreService';
 
 const TRIP_INQUIRIES_KEY = 'omoja_trip_inquiries_v1';
 const FLIGHT_INQUIRIES_KEY = 'omoja_flight_inquiries_v1';
 const TOUR_BOOKINGS_KEY = 'omoja_tour_bookings_v1';
-const ADMIN_NOTES_KEY = 'omoja_admin_notes_v1';
 
 // Seed sample initial records for realistic tracking
 const INITIAL_TRIP_INQUIRIES: TripInquiry[] = [
@@ -92,7 +92,30 @@ export const StorageService = {
     }
   },
 
-  saveTripInquiry(inquiry: Omit<TripInquiry, 'id' | 'reference' | 'createdAt' | 'status'>): TripInquiry {
+  async syncWithFirestore(): Promise<TripInquiry[]> {
+    try {
+      const remoteInquiries = await FirestoreService.getAllInquiries();
+      if (remoteInquiries && remoteInquiries.length > 0) {
+        const local = this.getTripInquiries();
+        // Merge without duplicates by reference
+        const refMap = new Map<string, TripInquiry>();
+        remoteInquiries.forEach(i => refMap.set(i.reference, i));
+        local.forEach(i => {
+          if (!refMap.has(i.reference)) {
+            refMap.set(i.reference, i);
+          }
+        });
+        const merged = Array.from(refMap.values());
+        localStorage.setItem(TRIP_INQUIRIES_KEY, JSON.stringify(merged));
+        return merged;
+      }
+    } catch (err) {
+      console.warn('[StorageService] Firestore sync fallback to local cache:', err);
+    }
+    return this.getTripInquiries();
+  },
+
+  saveTripInquiry(inquiry: Omit<TripInquiry, 'id' | 'reference' | 'createdAt' | 'status'>, customerId?: string): TripInquiry {
     const inquiries = this.getTripInquiries();
     const reference = `MMS-2026-${Math.floor(1000 + Math.random() * 9000)}`;
     const newInquiry: TripInquiry = {
@@ -106,6 +129,12 @@ export const StorageService = {
 
     inquiries.unshift(newInquiry);
     localStorage.setItem(TRIP_INQUIRIES_KEY, JSON.stringify(inquiries));
+
+    // Async sync to Cloud Firestore
+    FirestoreService.saveTripInquiry(inquiry, customerId).catch((err) => {
+      console.warn('[StorageService] Cloud sync error:', err);
+    });
+
     return newInquiry;
   },
 
@@ -123,6 +152,12 @@ export const StorageService = {
     }
 
     localStorage.setItem(TRIP_INQUIRIES_KEY, JSON.stringify(inquiries));
+
+    // Async sync to Cloud Firestore
+    FirestoreService.updateTripInquiryStatus(reference, status, statusNotes, adminNote, quotedAmount).catch((err) => {
+      console.warn('[StorageService] Cloud sync update error:', err);
+    });
+
     return true;
   },
 
@@ -142,7 +177,7 @@ export const StorageService = {
     }
   },
 
-  saveFlightInquiry(inquiry: Omit<FlightInquiry, 'id' | 'reference' | 'createdAt' | 'status'>): FlightInquiry {
+  saveFlightInquiry(inquiry: Omit<FlightInquiry, 'id' | 'reference' | 'createdAt' | 'status'>, customerId?: string): FlightInquiry {
     const list = this.getFlightInquiries();
     const reference = `FLT-2026-${Math.floor(1000 + Math.random() * 9000)}`;
     const newRecord: FlightInquiry = {
@@ -154,6 +189,12 @@ export const StorageService = {
     };
     list.unshift(newRecord);
     localStorage.setItem(FLIGHT_INQUIRIES_KEY, JSON.stringify(list));
+
+    // Sync to Cloud Firestore
+    FirestoreService.saveFlightInquiry(inquiry, customerId).catch((err) => {
+      console.warn('[StorageService] Cloud sync error:', err);
+    });
+
     return newRecord;
   },
 
@@ -167,7 +208,7 @@ export const StorageService = {
     }
   },
 
-  saveTourBooking(inquiry: Omit<TourBookingInquiry, 'id' | 'reference' | 'createdAt' | 'status'>): TourBookingInquiry {
+  saveTourBooking(inquiry: Omit<TourBookingInquiry, 'id' | 'reference' | 'createdAt' | 'status'>, customerId?: string): TourBookingInquiry {
     const list = this.getTourBookings();
     const reference = `TUR-2026-${Math.floor(1000 + Math.random() * 9000)}`;
     const newRecord: TourBookingInquiry = {
@@ -179,6 +220,12 @@ export const StorageService = {
     };
     list.unshift(newRecord);
     localStorage.setItem(TOUR_BOOKINGS_KEY, JSON.stringify(list));
+
+    // Sync to Cloud Firestore
+    FirestoreService.saveTourBooking(inquiry, customerId).catch((err) => {
+      console.warn('[StorageService] Cloud sync error:', err);
+    });
+
     return newRecord;
   }
 };

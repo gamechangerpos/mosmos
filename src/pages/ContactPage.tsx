@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { StorageService } from '../services/storageService';
+import { FirestoreService } from '../services/firestoreService';
 import { Mail, Phone, MapPin, Send, Check, MessageSquare, Clock } from 'lucide-react';
 
 interface ContactPageProps {
@@ -41,6 +42,15 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
         accommodationType: 'N/A',
         notes: `[Contact Form - ${formData.category}] Message: ${formData.message}`
       });
+
+      // Also record into dedicated contactMessages Firestore collection
+      FirestoreService.saveContactMessage({
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        subject: formData.category,
+        message: formData.message
+      }).catch(console.warn);
 
       setSubmittedRef(record.reference);
       setSubmitted(true);

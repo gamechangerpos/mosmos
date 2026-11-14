@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { AuthProvider } from './context/AuthContext';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
 import { HomePage } from './pages/HomePage';
@@ -20,6 +21,8 @@ import { GuideDetailPage } from './pages/GuideDetailPage';
 import { BookingStatusPage } from './pages/BookingStatusPage';
 import { AdminPage } from './pages/AdminPage';
 import { LegalPage } from './pages/LegalPage';
+import { AuthPage } from './pages/AuthPage';
+import { AccountPage } from './pages/AccountPage';
 
 export default function App() {
   const [currentPath, setCurrentPath] = useState<string>(() => {
@@ -55,6 +58,17 @@ export default function App() {
           onHeaderVisibleChange={setIsHeaderVisibleOverHero}
         />
       );
+    }
+
+    // Customer Authentication & Account Portal
+    if (path === '/login') {
+      return <AuthPage onNavigate={navigate} initialMode="login" />;
+    }
+    if (path === '/register') {
+      return <AuthPage onNavigate={navigate} initialMode="register" />;
+    }
+    if (path === '/account') {
+      return <AccountPage onNavigate={navigate} />;
     }
 
     // Destinations
@@ -100,7 +114,6 @@ export default function App() {
 
     // Plan Trip
     if (path.startsWith('/plan-trip')) {
-      // Check for search params if any
       const searchParams = new URLSearchParams(window.location.search);
       const destParam = searchParams.get('destination') || undefined;
       return <PlanTripPage onNavigate={navigate} initialDestination={destParam} />;
@@ -165,7 +178,7 @@ export default function App() {
         </p>
         <button
           onClick={() => navigate('/')}
-          className="px-6 py-3 bg-[#20221F] hover:bg-[#343C32] text-[#F7F4ED] text-xs font-semibold uppercase tracking-wider transition-colors"
+          className="px-6 py-3 bg-[#20221F] hover:bg-[#343C32] text-[#F7F4ED] text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer"
         >
           Return to Safari Entrance
         </button>
@@ -174,16 +187,18 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F7F4ED] text-[#20221F]">
-      <Header
-        currentPath={currentPath}
-        onNavigate={navigate}
-        isVisibleOverHero={isHeaderVisibleOverHero}
-      />
-      <main className="flex-1">
-        {renderCurrentRoute()}
-      </main>
-      <Footer onNavigate={navigate} />
-    </div>
+    <AuthProvider>
+      <div className="min-h-screen flex flex-col bg-[#F7F4ED] text-[#20221F]">
+        <Header
+          currentPath={currentPath}
+          onNavigate={navigate}
+          isVisibleOverHero={isHeaderVisibleOverHero}
+        />
+        <main className="flex-1">
+          {renderCurrentRoute()}
+        </main>
+        <Footer onNavigate={navigate} />
+      </div>
+    </AuthProvider>
   );
 }
