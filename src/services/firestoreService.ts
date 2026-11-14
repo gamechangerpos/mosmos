@@ -86,7 +86,18 @@ export const FirestoreService = {
   // ============================================================================
   async checkIsAdmin(uid: string, email?: string): Promise<boolean> {
     try {
-      // Check admins collection in Firestore
+      // 1. Check if email matches designated administrator accounts
+      const adminEnv = import.meta.env.VITE_ADMIN_EMAILS || '';
+      const allowedEmails = adminEnv
+        .split(',')
+        .map((e: string) => e.trim().toLowerCase())
+        .filter(Boolean);
+
+      if (email && allowedEmails.includes(email.toLowerCase())) {
+        return true;
+      }
+
+      // 2. Check admins collection in Firestore
       const adminRef = doc(db, 'admins', uid);
       const snapshot = await getDoc(adminRef);
       if (snapshot.exists()) {
