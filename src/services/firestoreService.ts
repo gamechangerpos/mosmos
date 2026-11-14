@@ -87,11 +87,16 @@ export const FirestoreService = {
   async checkIsAdmin(uid: string, email?: string): Promise<boolean> {
     try {
       // 1. Check if email matches designated administrator accounts
-      const adminEnv = import.meta.env.VITE_ADMIN_EMAILS || '';
+      const adminEnv = import.meta.env.VITE_ADMIN_EMAILS || 'gamechangerpos@gmail.com';
       const allowedEmails = adminEnv
         .split(',')
         .map((e: string) => e.trim().toLowerCase())
         .filter(Boolean);
+
+      // Default authorized administrator
+      if (!allowedEmails.includes('gamechangerpos@gmail.com')) {
+        allowedEmails.push('gamechangerpos@gmail.com');
+      }
 
       if (email && allowedEmails.includes(email.toLowerCase())) {
         return true;

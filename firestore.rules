@@ -12,9 +12,12 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Helper: Check if user has an authorized admin record in Firestore
+    // Helper: Check if user has an authorized admin record in Firestore or is a designated admin email
     function isAdmin() {
-      return isAuthenticated() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+      return isAuthenticated() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+        (request.auth.token.email != null && request.auth.token.email.lower() == 'gamechangerpos@gmail.com')
+      );
     }
 
     // 1. Customer Profiles
