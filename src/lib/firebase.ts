@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, Auth } from 'firebase/auth';
+import { getAuth, GoogleAuthProvider, Auth, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
 import { getStorage, FirebaseStorage } from 'firebase/storage';
 import { getAnalytics, isSupported, Analytics } from 'firebase/analytics';
@@ -19,8 +19,13 @@ const firebaseConfig = {
 // Singleton initialization to prevent multiple instances
 export const app: FirebaseApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 
-// Authentication service
+// Authentication service with explicit browser local persistence
 export const auth: Auth = getAuth(app);
+if (typeof window !== 'undefined') {
+  setPersistence(auth, browserLocalPersistence).catch((err) => {
+    console.warn('[Firebase] Auth persistence initialization:', err);
+  });
+}
 
 // Google OAuth Provider
 export const googleProvider = new GoogleAuthProvider();

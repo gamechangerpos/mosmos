@@ -27,6 +27,8 @@ export const PlanTripPage: React.FC<PlanTripPageProps> = ({ onNavigate, initialD
 
   const [submittedRef, setSubmittedRef] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [honeypot, setHoneypot] = useState('');
+  const [formError, setFormError] = useState<string | null>(null);
 
   const availableDestinations = [
     'Uganda', 'Tanzania', 'Rwanda', 'Kenya', 'South Africa',
@@ -77,30 +79,88 @@ export const PlanTripPage: React.FC<PlanTripPageProps> = ({ onNavigate, initialD
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email) return;
+    setFormError(null);
+
+    // 1. Honeypot check for spam protection
+    if (honeypot) {
+      setSubmittedRef(`MMS-2026-${Math.floor(1000 + Math.random() * 9000)}`);
+      return;
+    }
+
+    // 2. Syntax validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    const cleanEmail = formData.email.trim();
+    const cleanName = formData.name.trim();
+
+    if (!cleanName) {
+      setFormError('Please enter your name.');
+      return;
+    }
+
+    if (!cleanEmail || !emailRegex.test(cleanEmail)) {
+      setFormError('Please provide a valid email address so we can send your custom proposal.');
+      return;
+    }
+
+    // 3. Client rate-limiting
+    const lastSubKey = 'mos_last_planner_timestamp';
+    const lastSubTime = Number(sessionStorage.getItem(lastSubKey) || '0');
+    const now = Date.now();
+    if (now - lastSubTime < 8000) {
+      setFormError('Your request is being submitted. Please wait a moment.');
+      return;
+    }
+    sessionStorage.setItem(lastSubKey, String(now));
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      const record = StorageService.saveTripInquiry({
-        customerName: formData.name,
-        customerEmail: formData.email,
-        customerPhone: formData.phone,
-        preferredContact: formData.preferredContact,
-        destinations: formData.destinations,
-        travelDates: formData.travelDates || 'Flexible 2027',
-        durationDays: Number(formData.durationDays),
-        adultsCount: Number(formData.adults),
-        childrenCount: Number(formData.children),
-        budgetRange: formData.budgetRange,
-        travelStyle: formData.travelStyle,
-        preferredExperiences: formData.preferredExperiences,
-        accommodationType: formData.accommodationType,
-        notes: formData.notes
-      });
 
-      setSubmittedRef(record.reference);
-      setIsSubmitting(false);
-    }, 600);
+    // Try Vercel Serverless Function first for secure server-side email dispatch
+    fetch('/api/inquire', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: cleanName,
+        email: cleanEmail,
+        phone: formData.phone.trim() || undefined,
+        category: 'Custom Safari Planning',
+        destinations: formData.destinations,
+        travelDates: formData.travelDates,
+        message: `[Trip Planner] Destinations: ${formData.destinations.join(', ')} | Style: ${formData.travelStyle} | Budget: ${formData.budgetRange} | Travelers: ${formData.adults} Adults, ${formData.children} Children | Notes: ${formData.notes}`,
+        website_url_hp: honeypot
+      })
+    })
+      .then(async (res) => {
+        if (res.ok) {
+          const data = await res.json();
+          if (data.reference) {
+            setSubmittedRef(data.reference);
+          }
+        }
+      })
+      .catch(() => {
+        // Fallback for offline or local preview
+      })
+      .finally(() => {
+        const record = StorageService.saveTripInquiry({
+          customerName: cleanName,
+          customerEmail: cleanEmail,
+          customerPhone: formData.phone.trim() || undefined,
+          preferredContact: formData.preferredContact,
+          destinations: formData.destinations,
+          travelDates: formData.travelDates || 'Flexible 2027',
+          durationDays: Number(formData.durationDays),
+          adultsCount: Number(formData.adults),
+          childrenCount: Number(formData.children),
+          budgetRange: formData.budgetRange,
+          travelStyle: formData.travelStyle,
+          preferredExperiences: formData.preferredExperiences,
+          accommodationType: formData.accommodationType,
+          notes: formData.notes.trim() || undefined
+        });
+
+        setSubmittedRef((prev) => prev || record.reference);
+        setIsSubmitting(false);
+      });
   };
 
   return (
@@ -138,27 +198,41 @@ export const PlanTripPage: React.FC<PlanTripPageProps> = ({ onNavigate, initialD
             <span className="font-mono text-lg px-4 py-2 bg-[#F7F4ED] text-[#20221F] border border-[#D9D0C2] uppercase tracking-wider font-bold">
               {submittedRef}
             </span>
-            <p className="text-xs text-[#20221F]/70 max-w-lg mx-auto mt-6 leading-relaxed font-light">
-              We have dispatched your multi-country requirements to our senior expedition director. A personalized day-by-day proposal with lodge allocations and permit availability will be delivered to <strong className="text-[#20221F]">{formData.email}</strong> within 24 hours.
+            <p className="text-xs text-[#20221F]/80 max-w-lg mx-auto mt-6 leading-relaxed font-light">
+              Thank you, <strong>{formData.name}</strong>. We have dispatched your multi-country requirements to our senior expedition directors. A personalized day-by-day proposal with lodge allocations and permit availability will be delivered directly to <strong className="text-[#20221F]">{formData.email}</strong> within <strong>two business days</strong>.
+            </p>
+            <p className="text-[11px] text-[#78634B] mt-2 font-medium">
+              No login, OTP, or verification step is needed. Our team will contact you directly by email.
             </p>
 
             <div className="mt-8 flex justify-center gap-4">
               <button
-                onClick={() => onNavigate(`/booking/${submittedRef}`)}
-                className="px-6 py-2.5 bg-[#20221F] hover:bg-[#343C32] text-[#F7F4ED] text-xs font-semibold uppercase tracking-wider transition-colors shadow"
-              >
-                Track Live Status
-              </button>
-              <button
                 onClick={() => onNavigate('/')}
-                className="px-6 py-2.5 bg-transparent border border-[#D9D0C2] hover:border-[#20221F] text-[#20221F] text-xs font-semibold uppercase tracking-wider transition-colors"
+                className="px-6 py-2.5 bg-[#20221F] hover:bg-[#78634B] text-white text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer"
               >
-                Return Home
+                Return to Homepage
               </button>
             </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="bg-white p-6 sm:p-10 border border-[#D9D0C2] shadow-xl space-y-8">
+            {formError && (
+              <div className="p-3.5 bg-red-50 border border-red-200 text-red-700 text-xs">
+                {formError}
+              </div>
+            )}
+
+            {/* Spam Protection Honeypot */}
+            <input
+              type="text"
+              name="website_url_hp"
+              tabIndex={-1}
+              autoComplete="off"
+              value={honeypot}
+              onChange={(e) => setHoneypot(e.target.value)}
+              style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', height: 0, width: 0, margin: 0 }}
+              aria-hidden="true"
+            />
             
             {/* Step 1: Destination Selection (Multi-Country Support) */}
             <div>

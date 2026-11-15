@@ -1,6 +1,5 @@
 import React, { useRef } from 'react';
 import { CinematicHero } from '../components/CinematicHero';
-import { WildlifeScrollExperience } from '../components/WildlifeScrollExperience';
 import { WildlifeCinematicSequence } from '../components/home/WildlifeCinematicSequence';
 import { ScrollReveal, MaskedTextReveal, ParallaxImage, VirginCurtainReveal } from '../components/animations/ScrollReveal';
 import { DESTINATIONS } from '../data/destinationsData';
@@ -39,10 +38,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onHeaderVisibleC
 
   return (
     <div className="w-full bg-[#F7F4ED] relative overflow-x-hidden">
-      {/* 1. Animated Wildlife Scroll Encounters */}
-      <WildlifeScrollExperience onNavigate={onNavigate} />
-
-      {/* 2. Cinematic Video Hero with Rotating Videos */}
+      {/* 1. Cinematic Video Hero with Rotating Videos */}
       <CinematicHero
         onExploreClick={handleExploreScroll}
         onPlanTripClick={() => onNavigate('/plan-trip')}

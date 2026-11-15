@@ -265,7 +265,7 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({ slug, onNavigate
                     <Check className="w-6 h-6" />
                   </div>
                   <h4 className="font-serif text-xl text-[#F7F4ED] mb-1">
-                    Inquiry Received
+                    Booking Request Received
                   </h4>
                   <p className="text-xs text-[#D9D0C2] mb-3 font-light">
                     Your reference code is:
@@ -273,15 +273,9 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({ slug, onNavigate
                   <span className="font-mono text-sm px-3 py-1 bg-black/50 text-[#B69A68] border border-white/20 uppercase tracking-wider font-bold">
                     {submittedRef}
                   </span>
-                  <p className="text-[11px] text-[#D9D0C2]/70 mt-4 leading-relaxed font-light">
-                    We have recorded your request in our reservations ledger. You can track its live status at any time.
+                  <p className="text-[11px] text-[#D9D0C2]/80 mt-4 leading-relaxed font-light">
+                    Thank you, <strong>{formData.name}</strong>. Our travel team will review your booking details and respond directly to <strong>{formData.email}</strong> within <strong>two business days</strong>. No account creation or verification link is required.
                   </p>
-                  <button
-                    onClick={() => onNavigate(`/booking/${submittedRef}`)}
-                    className="mt-4 px-4 py-2 bg-[#B69A68] hover:bg-[#a68a58] text-[#20221F] text-xs font-semibold uppercase tracking-wider transition-colors w-full"
-                  >
-                    View Live Status
-                  </button>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">

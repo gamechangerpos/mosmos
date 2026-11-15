@@ -5,6 +5,7 @@ export interface EmailPayload {
   subject: string;
   html: string;
   text: string;
+  replyTo?: string;
 }
 
 // Brand helper wrapper for luxury responsive HTML email
@@ -148,6 +149,7 @@ ${supportEmail}`;
 
     return {
       to: inquiry.customerEmail,
+      replyTo: supportEmail,
       subject,
       text,
       html: wrapHtmlEmail(subject, htmlContent, settings)
@@ -185,6 +187,9 @@ Submission Date/Time: ${new Date(inquiry.createdAt).toLocaleString()}
 Full Customer Message:
 ${inquiry.notes || 'None provided'}
 
+Reply Directly to Customer:
+mailto:${inquiry.customerEmail}
+
 Secure Admin Link:
 ${adminUrl}
 `;
@@ -194,7 +199,7 @@ ${adminUrl}
         Internal Support Notification
       </div>
       <h2 class="h1">New Customer Inquiry — ${inquiry.reference}</h2>
-      <p class="lead">A new customer inquiry has been submitted through the website.</p>
+      <p class="lead">A new customer inquiry has been submitted through the website. You can reply directly to this email to contact the customer.</p>
 
       <div class="details-box">
         <div class="detail-row">
@@ -203,7 +208,7 @@ ${adminUrl}
         </div>
         <div class="detail-row">
           <span class="detail-label">Customer Email:</span>
-          <span class="detail-value"><a href="mailto:${inquiry.customerEmail}">${inquiry.customerEmail}</a></span>
+          <span class="detail-value"><a href="mailto:${inquiry.customerEmail}" style="color: #78634B; font-weight: 700;">${inquiry.customerEmail}</a> (Click to Reply)</span>
         </div>
         <div class="detail-row">
           <span class="detail-label">Phone:</span>
@@ -239,12 +244,14 @@ ${adminUrl}
       </div>
 
       <div style="text-align: center; margin-top: 28px;">
-        <a href="${adminUrl}" class="cta-button">Open in Admin Console</a>
+        <a href="mailto:${inquiry.customerEmail}?subject=Re:%20Safari%20Inquiry%20${inquiry.reference}%20%E2%80%94%20${encodeURIComponent(businessName)}" class="cta-button" style="margin-right: 12px;">Reply to Customer</a>
+        <a href="${adminUrl}" class="cta-button" style="background-color: #78634B;">Open in Admin Console</a>
       </div>
     `;
 
     return {
       to: supportEmail,
+      replyTo: inquiry.customerEmail,
       subject,
       text,
       html: wrapHtmlEmail(subject, htmlContent, settings)
@@ -366,6 +373,7 @@ ${supportEmail}`;
 
     return {
       to: booking.customerEmail,
+      replyTo: supportEmail,
       subject,
       text,
       html: wrapHtmlEmail(subject, htmlContent, settings)
@@ -401,6 +409,9 @@ Special Requests: ${booking.specialRequests || 'None'}
 Submission Timestamp: ${new Date(booking.createdAt).toLocaleString()}
 Current Booking Status: PENDING_REVIEW
 
+Reply Directly to Customer:
+mailto:${booking.customerEmail}
+
 Secure Admin Link:
 ${adminUrl}
 `;
@@ -410,7 +421,7 @@ ${adminUrl}
         High Priority: New Booking Submission
       </div>
       <h2 class="h1">NEW BOOKING REQUEST — ${booking.reference}</h2>
-      <p class="lead">A guest has submitted a booking reservation request awaiting review.</p>
+      <p class="lead">A guest has submitted a booking reservation request awaiting review. You can reply directly to this email to communicate with the guest.</p>
 
       <div class="details-box">
         <div class="detail-row">
@@ -423,7 +434,7 @@ ${adminUrl}
         </div>
         <div class="detail-row">
           <span class="detail-label">Email:</span>
-          <span class="detail-value"><a href="mailto:${booking.customerEmail}">${booking.customerEmail}</a></span>
+          <span class="detail-value"><a href="mailto:${booking.customerEmail}" style="color: #BA5F27; font-weight: 700;">${booking.customerEmail}</a> (Click to Reply)</span>
         </div>
         <div class="detail-row">
           <span class="detail-label">Phone:</span>
@@ -463,12 +474,14 @@ ${adminUrl}
       </div>
 
       <div style="text-align: center; margin-top: 28px;">
-        <a href="${adminUrl}" class="cta-button">Review Booking in Admin Console</a>
+        <a href="mailto:${booking.customerEmail}?subject=Re:%20Safari%20Booking%20${booking.reference}%20%E2%80%94%20${encodeURIComponent(businessName)}" class="cta-button" style="margin-right: 12px;">Reply to Customer</a>
+        <a href="${adminUrl}" class="cta-button" style="background-color: #78634B;">Review in Admin Console</a>
       </div>
     `;
 
     return {
       to: supportEmail,
+      replyTo: booking.customerEmail,
       subject,
       text,
       html: wrapHtmlEmail(subject, htmlContent, settings)
@@ -564,6 +577,7 @@ ${supportEmail}`;
 
     return {
       to: inquiry.customerEmail,
+      replyTo: supportEmail,
       subject,
       text,
       html: wrapHtmlEmail(subject, htmlContent, settings)

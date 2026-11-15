@@ -57,7 +57,7 @@ async function sendViaFormSubmit(
       _subject: payload.subject,
       _template: 'table',
       _captcha: 'false',
-      _replyto: settings.supportEmail || 'gamechangerpos@gmail.com',
+      _replyto: payload.replyTo || (settings.supportEmail || 'gamechangerpos@gmail.com'),
       Reference: reference,
       NotificationType: type,
       Recipient: recipient,
@@ -129,6 +129,7 @@ async function sendViaEmailJS(
       {
         to_email: recipient,
         to_name: recipient.split('@')[0],
+        reply_to: payload.replyTo || (settings.supportEmail || 'gamechangerpos@gmail.com'),
         subject: payload.subject,
         message: payload.text,
         reference: reference

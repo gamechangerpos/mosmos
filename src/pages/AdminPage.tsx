@@ -42,6 +42,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState(false);
+  const [googleLoginError, setGoogleLoginError] = useState<string | null>(null);
   
   // Primary Tabs
   const [activeTab, setActiveTab] = useState<'inquiries' | 'notifications' | 'analytics'>('inquiries');
@@ -148,11 +149,20 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   };
 
   const handleGoogleAdminLogin = async () => {
+    setGoogleLoginError(null);
     try {
       await loginWithGoogle();
       setIsAuthenticated(true);
     } catch (err: any) {
       console.warn('Google sign-in error:', err);
+      if (err?.code === 'auth/unauthorized-domain') {
+        const domain = typeof window !== 'undefined' ? window.location.hostname : 'mosmos-ochre.vercel.app';
+        setGoogleLoginError(`Domain Authorization Required: Please add "${domain}" to Firebase Console -> Authentication -> Settings -> Authorized domains.`);
+      } else if (err?.code === 'auth/popup-closed-by-user') {
+        setGoogleLoginError('Google sign-in window was closed before completing login.');
+      } else {
+        setGoogleLoginError(err?.message || 'Google sign-in encountered an unexpected issue.');
+      }
     }
   };
 
@@ -322,6 +332,16 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
             <UserCheck className="w-4 h-4 text-[#78634B]" />
             <span>Sign In with Admin Google Account</span>
           </button>
+
+          {googleLoginError && (
+            <div className="mt-3 p-3 bg-amber-50 border border-amber-300 text-amber-900 text-xs rounded-sm leading-relaxed">
+              <div className="font-semibold text-[11px] mb-1 flex items-center gap-1.5 text-amber-800">
+                <AlertCircle className="w-3.5 h-3.5" />
+                <span>Authentication Notice</span>
+              </div>
+              <p>{googleLoginError}</p>
+            </div>
+          )}
 
           <div className="mt-6 pt-4 border-t border-[#D9D0C2] text-center">
             <span className="text-[11px] text-[#20221F]/60">

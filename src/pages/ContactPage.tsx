@@ -17,45 +17,107 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
     message: ''
   });
 
+  const [honeypot, setHoneypot] = useState('');
+  const [formError, setFormError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [submittedRef, setSubmittedRef] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.message) return;
+    setFormError(null);
+
+    // 1. Honeypot check (Low-friction spam protection: bots fill hidden inputs, humans don't)
+    if (honeypot) {
+      // Silently discard spam bot submission
+      setSubmitted(true);
+      return;
+    }
+
+    // 2. Syntax validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+    const cleanEmail = formData.email.trim();
+    const cleanMessage = formData.message.trim();
+    const cleanName = formData.name.trim() || 'Valued Guest';
+
+    if (!cleanEmail || !emailRegex.test(cleanEmail)) {
+      setFormError('Please provide a valid email address so our team can reply to you.');
+      return;
+    }
+
+    if (!cleanMessage || cleanMessage.length < 5) {
+      setFormError('Please enter your inquiry or question (at least 5 characters).');
+      return;
+    }
+
+    // 3. Client-side rate limiting (prevents rapid-fire automated submissions)
+    const lastSubKey = 'mos_last_inquiry_timestamp';
+    const lastSubTime = Number(sessionStorage.getItem(lastSubKey) || '0');
+    const now = Date.now();
+    if (now - lastSubTime < 8000) {
+      setFormError('Your inquiry is being processed. Please wait a few moments before sending another message.');
+      return;
+    }
+    sessionStorage.setItem(lastSubKey, String(now));
 
     setIsSubmitting(true);
-    setTimeout(() => {
-      const record = StorageService.saveTripInquiry({
-        customerName: formData.name,
-        customerEmail: formData.email,
-        customerPhone: formData.phone,
-        preferredContact: 'email',
-        destinations: [formData.destination],
-        travelDates: 'Inquiry Message',
-        adultsCount: 2,
-        childrenCount: 0,
-        budgetRange: 'Inquiry',
-        travelStyle: `Contact Category: ${formData.category}`,
-        preferredExperiences: [formData.category],
-        accommodationType: 'N/A',
-        notes: `[Contact Form - ${formData.category}] Message: ${formData.message}`
+
+    // 4. Try Vercel Serverless Function first for secure server-side email dispatch
+    fetch('/api/inquire', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: cleanName,
+        email: cleanEmail,
+        phone: formData.phone.trim() || undefined,
+        category: formData.category,
+        destination: formData.destination,
+        message: cleanMessage,
+        website_url_hp: honeypot
+      })
+    })
+      .then(async (res) => {
+        if (res.ok) {
+          const data = await res.json();
+          if (data.reference) {
+            setSubmittedRef(data.reference);
+          }
+        }
+      })
+      .catch(() => {
+        // Offline / local preview fallback
+      })
+      .finally(() => {
+        // 5. Always persist to Firestore and trigger local storage record
+        const record = StorageService.saveTripInquiry({
+          customerName: cleanName,
+          customerEmail: cleanEmail,
+          customerPhone: formData.phone.trim() || undefined,
+          preferredContact: 'email',
+          destinations: [formData.destination],
+          travelDates: 'Direct Inquiry',
+          adultsCount: 2,
+          childrenCount: 0,
+          budgetRange: 'Inquiry',
+          travelStyle: `Contact: ${formData.category}`,
+          preferredExperiences: [formData.category],
+          accommodationType: 'N/A',
+          notes: `[Contact Form - ${formData.category}] Message: ${cleanMessage}`
+        });
+
+        // Also persist to contactMessages collection in Firestore
+        FirestoreService.saveContactMessage({
+          name: cleanName,
+          email: cleanEmail,
+          phone: formData.phone.trim() || undefined,
+          subject: formData.category,
+          message: cleanMessage
+        }).catch(console.warn);
+
+        setSubmittedRef((prev) => prev || record.reference);
+        setSubmitted(true);
+        setIsSubmitting(false);
       });
-
-      // Also record into dedicated contactMessages Firestore collection
-      FirestoreService.saveContactMessage({
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone,
-        subject: formData.category,
-        message: formData.message
-      }).catch(console.warn);
-
-      setSubmittedRef(record.reference);
-      setSubmitted(true);
-      setIsSubmitting(false);
-    }, 600);
   };
 
   return (
@@ -125,33 +187,26 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
                 </div>
               </div>
             </div>
-
-            {/* Quick Reference Tracker prompt */}
-            <div className="bg-[#20221F] text-[#F7F4ED] p-8 border border-[#343C32]">
-              <h4 className="font-serif text-xl font-light text-[#F7F4ED] mb-2">
-                Have an Active Reference Code?
-              </h4>
-              <p className="text-xs text-[#D9D0C2] font-light leading-relaxed mb-4">
-                If you already received an inquiry or booking code, you can track its progress immediately in our live ledger.
-              </p>
-              <button
-                onClick={() => onNavigate('/booking/MMS-2026-7841')}
-                className="w-full py-2.5 bg-[#B69A68] hover:bg-[#a68a58] text-[#20221F] text-xs font-semibold uppercase tracking-wider transition-colors"
-              >
-                Track Live Booking Status
-              </button>
-            </div>
           </div>
 
           {/* Contact Form */}
           <div className="lg:col-span-7">
             <div className="bg-white p-8 sm:p-10 border border-[#D9D0C2] shadow-xl">
               <span className="text-[10px] uppercase tracking-wider text-[#78634B] font-semibold block mb-1">
-                Dispatch Form
+                Direct Contact
               </span>
-              <h2 className="font-serif text-3xl font-light text-[#20221F] mb-6">
+              <h2 className="font-serif text-3xl font-light text-[#20221F] mb-2">
                 Send a Message
               </h2>
+              <p className="text-xs text-[#20221F]/60 mb-6 font-light">
+                No login or account required. Simply enter your email and message, and our team will reply directly to your inbox.
+              </p>
+
+              {formError && (
+                <div className="p-3.5 mb-6 bg-red-50 border border-red-200 text-red-700 text-xs">
+                  {formError}
+                </div>
+              )}
 
               {submitted ? (
                 <div className="p-8 bg-[#F7F4ED] border border-emerald-500/40 text-center animate-letter-in">
@@ -159,16 +214,19 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
                     <Check className="w-8 h-8" />
                   </div>
                   <h3 className="font-serif text-2xl font-light text-[#20221F] mb-2">
-                    Message Successfully Sent
+                    Inquiry Received
                   </h3>
-                  <p className="text-xs text-[#20221F]/70 mb-4 font-light">
-                    Your correspondence reference:
+                  <p className="text-xs text-[#20221F]/70 mb-3 font-light">
+                    Your inquiry reference code:
                   </p>
                   <span className="font-mono text-base px-4 py-2 bg-white text-[#20221F] border border-[#D9D0C2] uppercase tracking-wider font-bold">
                     {submittedRef}
                   </span>
-                  <p className="text-xs text-[#20221F]/70 max-w-md mx-auto mt-6 leading-relaxed font-light">
-                    Thank you, {formData.name}. Our expedition director will review your inquiry and reply to {formData.email} within several hours.
+                  <p className="text-xs text-[#20221F]/80 max-w-md mx-auto mt-6 leading-relaxed font-light">
+                    Thank you, <strong>{formData.name || 'Valued Guest'}</strong>. Your inquiry has been received by our expedition directors. Our team will carefully review your details and respond directly to <strong>{formData.email}</strong> within <strong>two business days</strong>.
+                  </p>
+                  <p className="text-[11px] text-[#78634B] mt-2 font-medium">
+                    No account creation, OTP, or email verification is required.
                   </p>
                   <button
                     onClick={() => {
@@ -176,13 +234,24 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
                       setSubmittedRef(null);
                       setFormData({ ...formData, message: '' });
                     }}
-                    className="mt-6 px-6 py-2 bg-[#20221F] text-white text-xs font-semibold uppercase tracking-wider"
+                    className="mt-6 px-6 py-2.5 bg-[#20221F] hover:bg-[#78634B] text-white text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer"
                   >
                     Send Another Message
                   </button>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Spam Protection Honeypot */}
+                  <input
+                    type="text"
+                    name="website_url_hp"
+                    tabIndex={-1}
+                    autoComplete="off"
+                    value={honeypot}
+                    onChange={(e) => setHoneypot(e.target.value)}
+                    style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', height: 0, width: 0, margin: 0 }}
+                    aria-hidden="true"
+                  />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div>
                       <label className="text-xs uppercase tracking-wider text-[#20221F]/80 font-semibold block mb-1.5">

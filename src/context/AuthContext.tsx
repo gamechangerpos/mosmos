@@ -4,6 +4,8 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   signInWithPopup, 
+  signInWithRedirect,
+  getRedirectResult,
   signOut, 
   sendPasswordResetEmail,
   onAuthStateChanged,
@@ -56,6 +58,17 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   useEffect(() => {
+    // Check for redirect result on return from Google OAuth
+    getRedirectResult(auth)
+      .then(async (cred) => {
+        if (cred && cred.user) {
+          await fetchProfileAndRoles(cred.user);
+        }
+      })
+      .catch((err) => {
+        console.warn('[AuthContext] Redirect result check:', err);
+      });
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       if (firebaseUser) {
@@ -84,8 +97,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const loginWithGoogle = async () => {
-    const cred = await signInWithPopup(auth, googleProvider);
-    await fetchProfileAndRoles(cred.user);
+    try {
+      const cred = await signInWithPopup(auth, googleProvider);
+      await fetchProfileAndRoles(cred.user);
+    } catch (popupErr: any) {
+      // If popup is blocked by browser or fails on mobile with storage partition restriction, fall back to redirect
+      if (
+        popupErr.code === 'auth/popup-blocked' || 
+        popupErr.code === 'auth/cancelled-popup-request'
+      ) {
+        console.warn('[AuthContext] Popup blocked, initiating redirect sign-in...');
+        await signInWithRedirect(auth, googleProvider);
+      } else {
+        throw popupErr;
+      }
+    }
   };
 
   const logout = async () => {
