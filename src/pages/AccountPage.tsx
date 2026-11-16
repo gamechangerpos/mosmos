@@ -1057,36 +1057,65 @@ export const AccountPage: React.FC<AccountPageProps> = ({ onNavigate }) => {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {wishlist.map((item) => (
-                  <div key={item.id} className="border border-[#D9D0C2] bg-[#F7F4ED]/30 rounded-sm overflow-hidden flex flex-col justify-between">
-                    <div className="relative h-44 overflow-hidden">
-                      <img src={item.heroImage} alt={item.title} className="w-full h-full object-cover" />
-                      <button
-                        onClick={() => handleRemoveWishlistItem(item.itemId)}
-                        className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white hover:text-red-400 flex items-center justify-center transition-colors"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                    <div className="p-4 flex-1 flex flex-col justify-between">
-                      <h4 className="font-serif text-lg text-[#20221F] mb-2">{item.title}</h4>
-                      <div className="flex items-center justify-between pt-3 border-t border-[#D9D0C2] text-xs">
+                {wishlist.map((item) => {
+                  const itemPath = 
+                    item.itemType === 'destination' ? `/destinations/${item.slug}` :
+                    item.itemType === 'tour' ? `/safari-tours/${item.slug}` :
+                    item.itemType === 'stay' ? `/stays/${item.slug}` :
+                    `/travel-packages/${item.slug}`;
+
+                  const itemTypeLabel = 
+                    item.itemType === 'destination' ? 'Destination' :
+                    item.itemType === 'tour' ? 'Safari Tour' :
+                    item.itemType === 'stay' ? 'Lodge Stay' :
+                    'Travel Package';
+
+                  return (
+                    <div key={item.id} className="border border-[#D9D0C2] bg-[#F7F4ED]/30 rounded-sm overflow-hidden flex flex-col justify-between">
+                      <div className="relative h-44 overflow-hidden">
+                        <img src={item.heroImage} alt={item.title} className="w-full h-full object-cover" />
+                        <span className="absolute top-2 left-2 px-2.5 py-1 bg-black/60 backdrop-blur-md text-[#B69A68] text-[9px] uppercase tracking-wider font-semibold border border-white/10">
+                          {itemTypeLabel}
+                        </span>
                         <button
-                          onClick={() => onNavigate(`/travel-packages/${item.slug}`)}
-                          className="text-[#78634B] hover:text-[#20221F] font-semibold uppercase tracking-wider"
+                          onClick={() => handleRemoveWishlistItem(item.itemId)}
+                          className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 text-white hover:text-red-400 flex items-center justify-center transition-colors cursor-pointer"
+                          title="Remove from Wishlist"
                         >
-                          View Details
-                        </button>
-                        <button
-                          onClick={() => onNavigate(`/plan-trip?destination=${item.slug}`)}
-                          className="px-3 py-1 bg-[#20221F] text-white uppercase tracking-wider font-semibold text-[10px]"
-                        >
-                          Inquire
+                          ✕
                         </button>
                       </div>
+                      <div className="p-4 flex-1 flex flex-col justify-between">
+                        <div>
+                          <h4 className="font-serif text-lg text-[#20221F] mb-1">{item.title}</h4>
+                          {item.location && (
+                            <p className="text-[11px] text-[#78634B] flex items-center gap-1 mb-2">
+                              <MapPin className="w-3 h-3 shrink-0" />
+                              <span>{item.location}</span>
+                            </p>
+                          )}
+                          {item.priceNote && (
+                            <span className="text-xs font-medium text-[#20221F] block mb-3">{item.priceNote}</span>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between pt-3 border-t border-[#D9D0C2] text-xs">
+                          <button
+                            onClick={() => onNavigate(itemPath)}
+                            className="text-[#78634B] hover:text-[#20221F] font-semibold uppercase tracking-wider cursor-pointer"
+                          >
+                            View Details
+                          </button>
+                          <button
+                            onClick={() => onNavigate(`/plan-trip?destination=${item.title}`)}
+                            className="px-3 py-1 bg-[#20221F] text-white hover:bg-[#B69A68] hover:text-[#20221F] uppercase tracking-wider font-semibold text-[10px] transition-colors cursor-pointer"
+                          >
+                            Inquire
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

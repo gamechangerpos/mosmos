@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useCmsPackages } from '../services/cmsService';
 import { StorageService } from '../services/storageService';
 import { ReviewListWidget } from '../components/reviews/ReviewListWidget';
+import { WishlistButton } from '../components/common/WishlistButton';
 import { ArrowLeft, Clock, CheckCircle2, XCircle, Send, Check } from 'lucide-react';
 
 interface PackageDetailPageProps {
@@ -65,7 +66,7 @@ export const PackageDetailPage: React.FC<PackageDetailPageProps> = ({ slug, onNa
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
         
         <div className="absolute inset-0 flex flex-col justify-between max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 z-10">
-          <div>
+          <div className="flex items-center justify-between gap-4">
             <button
               onClick={() => onNavigate('/travel-packages')}
               className="inline-flex items-center gap-2 text-xs uppercase tracking-wider text-[#D9D0C2] hover:text-[#FFFFFF] transition-colors"
@@ -73,6 +74,18 @@ export const PackageDetailPage: React.FC<PackageDetailPageProps> = ({ slug, onNa
               <ArrowLeft className="w-4 h-4" />
               <span>Back to Travel Packages</span>
             </button>
+            <WishlistButton
+              item={{
+                itemId: pkg.id,
+                itemType: 'package',
+                slug: pkg.slug,
+                title: pkg.title,
+                heroImage: pkg.heroImage,
+                location: pkg.destinations.join(', '),
+                priceNote: `$${pkg.priceFrom?.toLocaleString()} / person`
+              }}
+              variant="button"
+            />
           </div>
 
           <div>

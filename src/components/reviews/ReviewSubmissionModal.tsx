@@ -5,7 +5,7 @@ import { ReviewService } from '../../services/reviewService';
 interface ReviewSubmissionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  targetType: 'package' | 'destination' | 'general';
+  targetType: 'package' | 'destination' | 'tour' | 'stay' | 'general';
   targetSlug?: string;
   targetTitle?: string;
   onSuccess?: () => void;

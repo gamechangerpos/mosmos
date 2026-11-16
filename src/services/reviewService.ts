@@ -73,6 +73,36 @@ const INITIAL_APPROVED_REVIEWS: CustomerReview[] = [
     comment: 'Every detail for our children and parents was considered. From hot air balloon safaris over the Mara at dawn to private bush dinners under the African stars, MOS MOS created memories we will cherish for generations.',
     status: 'approved',
     createdAt: '2026-01-05T11:30:00Z'
+  },
+  {
+    id: 'rev_5',
+    targetType: 'tour',
+    targetSlug: 'uganda-ultimate-primates-murchison',
+    targetTitle: '8-Day Uganda Ultimate Primates & Murchison Odyssey',
+    rating: 5,
+    authorName: 'Charlotte & David Hughes',
+    authorLocation: 'Melbourne, Australia',
+    tripType: 'Primate & Wildlife Expedition',
+    travelDate: 'November 2025',
+    title: 'From Murchison Falls to the gorillas — absolutely masterclass',
+    comment: 'The boat excursion along the Victoria Nile leading to the base of Murchison Falls was extraordinary. Then moving on to Kibale for chimpanzees and Bwindi for mountain gorillas was the ultimate climax.',
+    status: 'approved',
+    createdAt: '2025-11-20T10:00:00Z'
+  },
+  {
+    id: 'rev_6',
+    targetType: 'stay',
+    targetSlug: 'sanctuary-gorilla-forest-camp',
+    targetTitle: 'Sanctuary Gorilla Forest Camp',
+    rating: 5,
+    authorName: 'Lord Arthur Sterling',
+    authorLocation: 'Edinburgh, Scotland',
+    tripType: 'Luxury Rainforest Sanctuary',
+    travelDate: 'August 2025',
+    title: 'Gorillas visited our private camp veranda at dawn',
+    comment: 'An ecological sanctuary of the highest order. Waking up inside Bwindi to the call of turacos and having a silverback calmly forage near our deck is a memory carved forever into my mind.',
+    status: 'approved',
+    createdAt: '2025-08-30T17:10:00Z'
   }
 ];
 
@@ -109,7 +139,7 @@ export const ReviewService = {
     return newReview;
   },
 
-  async getApprovedReviews(targetType?: 'package' | 'destination' | 'general', targetSlug?: string): Promise<CustomerReview[]> {
+  async getApprovedReviews(targetType?: 'package' | 'destination' | 'tour' | 'stay' | 'general', targetSlug?: string): Promise<CustomerReview[]> {
     try {
       let q = query(
         collection(db, 'reviews'),

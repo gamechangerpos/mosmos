@@ -8,7 +8,7 @@ import { SAFARI_TOURS } from '../data/toursData';
 import { ACCOMMODATIONS } from '../data/staysData';
 import { TRAVEL_PACKAGES } from '../data/packagesData';
 import { useCmsPackages, useCmsDestinations } from '../services/cmsService';
-import { ArrowRight, Compass, ShieldCheck, HeartHandshake, Eye, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, Compass, ShieldCheck, HeartHandshake, Eye, CheckCircle2, Star, Camera, Quote } from 'lucide-react';
 
 interface HomePageProps {
   onNavigate: (path: string) => void;
@@ -623,6 +623,91 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onHeaderVisibleC
                 <p className="text-xs text-[#20221F]/60 leading-relaxed font-light">
                   {item.desc}
                 </p>
+              </div>
+            </ScrollReveal>
+          ))}
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════════
+          9B. VERIFIED TESTIMONIALS & EXPEDITION GALLERY
+          ═══════════════════════════════════════════════ */}
+      <section className="py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-[#D9D0C2]">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
+          <div>
+            <ScrollReveal direction="down" delay={0.1}>
+              <span className="text-[10px] uppercase tracking-[0.3em] text-[#78634B] font-semibold block mb-3">
+                Field Reports & Patron Experiences
+              </span>
+            </ScrollReveal>
+            <MaskedTextReveal delay={0.2}>
+              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-light text-[#20221F] leading-tight">
+                Reflections From the Wilderness
+              </h2>
+            </MaskedTextReveal>
+          </div>
+          <ScrollReveal direction="left" delay={0.3}>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => onNavigate('/gallery')}
+                className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-[#78634B] hover:text-[#20221F] transition-colors cursor-pointer"
+              >
+                <Camera className="w-4 h-4" />
+                <span>View Full Photo Gallery</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </ScrollReveal>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {[
+            {
+              quote: 'Sitting five meters from a 400-pound mountain gorilla silverback in Bwindi. The habituation permits and luxury camp overlooking the mist were executed with absolute precision.',
+              author: 'Marcus & Claire Dupont',
+              location: 'Geneva, Switzerland',
+              trip: 'Uganda Primate & Gorilla Trek',
+              rating: 5,
+            },
+            {
+              quote: 'The Mara River wildebeest crossing was an awe-inspiring spectacle. Our private guide Samuel possessed encyclopedic knowledge of predator movements and positioned us flawlessly.',
+              author: 'Eleanor Vance',
+              location: 'London, United Kingdom',
+              trip: 'Serengeti & Mara Migration',
+              rating: 5,
+            },
+            {
+              quote: 'Every detail for our three generations was considered. From hot air balloon safaris at dawn to private starlit bush dinners, MOS MOS created memories we will cherish forever.',
+              author: 'Amara Kalu',
+              location: 'Toronto, Canada',
+              trip: 'Family Conservancy Safari',
+              rating: 5,
+            },
+          ].map((item, idx) => (
+            <ScrollReveal key={item.author} direction="up" delay={0.15 + idx * 0.1}>
+              <div className="bg-white border border-[#D9D0C2] p-8 h-full flex flex-col justify-between hover-lift shadow-sm">
+                <div>
+                  <div className="flex items-center gap-1 text-[#B69A68] mb-4">
+                    {[...Array(item.rating)].map((_, i) => (
+                      <Star key={i} className="w-3.5 h-3.5 fill-current" />
+                    ))}
+                  </div>
+                  <Quote className="w-6 h-6 text-[#78634B]/30 mb-3" />
+                  <p className="text-xs sm:text-sm text-[#20221F]/80 font-light leading-relaxed mb-6 italic">
+                    "{item.quote}"
+                  </p>
+                </div>
+                <div className="pt-4 border-t border-[#D9D0C2]/60">
+                  <h4 className="font-serif text-base font-medium text-[#20221F]">
+                    {item.author}
+                  </h4>
+                  <span className="text-[11px] text-[#20221F]/50 block">
+                    {item.location}
+                  </span>
+                  <span className="text-[10px] text-[#78634B] uppercase tracking-wider font-semibold block mt-1">
+                    {item.trip}
+                  </span>
+                </div>
               </div>
             </ScrollReveal>
           ))}

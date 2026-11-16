@@ -362,7 +362,7 @@ export interface SupportConversation {
 export interface WishlistItem {
   id: string;
   customerId: string;
-  itemType: 'package' | 'destination';
+  itemType: 'package' | 'destination' | 'tour' | 'stay';
   itemId: string;
   slug: string;
   title: string;
@@ -439,7 +439,7 @@ export interface GalleryStory {
 
 export interface CustomerReview {
   id: string;
-  targetType: 'package' | 'destination' | 'general';
+  targetType: 'package' | 'destination' | 'tour' | 'stay' | 'general';
   targetSlug?: string;
   targetTitle?: string;
   rating: number; // 1-5

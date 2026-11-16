@@ -6,6 +6,7 @@ import { SearchFilterBar } from '../components/SearchFilterBar';
 import { ScrollReveal, MaskedTextReveal, ParallaxImage, VirginCurtainReveal } from '../components/animations/ScrollReveal';
 import { InteractiveTravelMap } from '../components/common/InteractiveTravelMap';
 import { DestinationComparisonModal } from '../components/destinations/DestinationComparisonModal';
+import { WishlistButton } from '../components/common/WishlistButton';
 
 interface DestinationsPageProps {
   onNavigate: (path: string) => void;
@@ -162,6 +163,19 @@ export const DestinationsPage: React.FC<DestinationsPageProps> = ({ onNavigate }
                       loading="lazy"
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.05]"
                     />
+                    <div className="absolute top-3 right-3 z-10">
+                      <WishlistButton
+                        item={{
+                          itemId: dest.id,
+                          itemType: 'destination',
+                          slug: dest.slug,
+                          title: dest.name,
+                          heroImage: dest.heroImage,
+                          location: `${dest.region}, Africa`
+                        }}
+                        variant="icon"
+                      />
+                    </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   </div>
 

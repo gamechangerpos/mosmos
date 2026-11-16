@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ACCOMMODATIONS } from '../data/staysData';
 import { CinematicVideo } from '../components/common/CinematicVideo';
+import { WishlistButton } from '../components/common/WishlistButton';
 import { ArrowRight, MapPin } from 'lucide-react';
 import { ScrollReveal, MaskedTextReveal, ParallaxImage, VirginCurtainReveal } from '../components/animations/ScrollReveal';
 
@@ -108,6 +109,20 @@ export const StaysPage: React.FC<StaysPageProps> = ({ onNavigate }) => {
                       loading="lazy"
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.05]"
                     />
+                    <div className="absolute top-3 right-3 z-10">
+                      <WishlistButton
+                        item={{
+                          itemId: stay.id,
+                          itemType: 'stay',
+                          slug: stay.slug,
+                          title: stay.name,
+                          heroImage: stay.heroImage,
+                          location: `${stay.destination} · ${stay.location}`,
+                          priceNote: stay.indicativePricePerNight ? `$${stay.indicativePricePerNight}/night` : undefined
+                        }}
+                        variant="icon"
+                      />
+                    </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   </div>
 

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { ACCOMMODATIONS } from '../data/staysData';
 import { StorageService } from '../services/storageService';
+import { ReviewListWidget } from '../components/reviews/ReviewListWidget';
+import { WishlistButton } from '../components/common/WishlistButton';
 import { ArrowLeft, MapPin, CheckCircle2, Clock, Users, BedDouble, Send, Check } from 'lucide-react';
 import { ScrollReveal, MaskedTextReveal, ParallaxImage, VirginCurtainReveal } from '../components/animations/ScrollReveal';
 
@@ -75,8 +77,8 @@ export const StayDetailPage: React.FC<StayDetailPageProps> = ({ slug, onNavigate
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/40" />
         
-        {/* Back navigation */}
-        <div className="absolute top-8 left-0 right-0 z-20 max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
+        {/* Back navigation & floating action */}
+        <div className="absolute top-8 left-0 right-0 z-20 max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 flex items-center justify-between gap-4">
           <button
             onClick={() => onNavigate('/stays')}
             className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] font-semibold text-white/80 hover:text-white transition-colors cursor-pointer bg-black/40 backdrop-blur-md px-4 py-2 border border-white/10"
@@ -84,6 +86,18 @@ export const StayDetailPage: React.FC<StayDetailPageProps> = ({ slug, onNavigate
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>All Accommodations</span>
           </button>
+          <WishlistButton
+            item={{
+              itemId: stay.id,
+              itemType: 'stay',
+              slug: stay.slug,
+              title: stay.name,
+              heroImage: stay.heroImage,
+              location: `${stay.destination} · ${stay.location}`,
+              priceNote: stay.indicativePricePerNight ? `$${stay.indicativePricePerNight}/night` : undefined
+            }}
+            variant="button"
+          />
         </div>
 
         {/* Bottom Hero Content */}
@@ -341,6 +355,15 @@ export const StayDetailPage: React.FC<StayDetailPageProps> = ({ slug, onNavigate
             </div>
           </div>
 
+        </div>
+
+        {/* Customer Reviews & Guest Testimonials */}
+        <div className="mt-16">
+          <ReviewListWidget
+            targetType="stay"
+            targetSlug={stay.slug}
+            targetTitle={stay.name}
+          />
         </div>
       </div>
     </div>

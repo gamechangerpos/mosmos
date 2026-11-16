@@ -2,6 +2,7 @@ import {
   collection, 
   doc, 
   setDoc, 
+  deleteDoc,
   getDoc, 
   getDocs, 
   query, 
@@ -308,7 +309,12 @@ export const PortalService = {
       const q = query(collection(db, 'customers', customerId, 'wishlist'), orderBy('addedAt', 'desc'));
       const snap = await getDocs(q);
       const list: WishlistItem[] = [];
-      snap.forEach(d => list.push(d.data() as WishlistItem));
+      snap.forEach(d => {
+        const data = d.data() as WishlistItem;
+        if (!(data as any).deleted) {
+          list.push(data);
+        }
+      });
       if (list.length > 0) {
         localStorage.setItem(storageKey, JSON.stringify(list));
         return list;
@@ -358,7 +364,7 @@ export const PortalService = {
       items.splice(existingIndex, 1);
       try {
         const itemRef = doc(db, 'customers', customerId, 'wishlist', item.itemId);
-        await setDoc(itemRef, { deleted: true });
+        await deleteDoc(itemRef);
       } catch (err) {
         console.warn('[PortalService] toggleWishlist remove firestore error:', err);
       }

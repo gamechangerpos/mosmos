@@ -4,6 +4,7 @@ import { SAFARI_TOURS } from '../data/toursData';
 import { ACCOMMODATIONS } from '../data/staysData';
 import { CinematicVideo } from '../components/common/CinematicVideo';
 import { ReviewListWidget } from '../components/reviews/ReviewListWidget';
+import { WishlistButton } from '../components/common/WishlistButton';
 import { ArrowLeft, ArrowRight, CheckCircle2, Calendar, Sun, DollarSign, FileText, Compass, Sparkles, MapPin } from 'lucide-react';
 import { ScrollReveal, MaskedTextReveal, ParallaxImage, VirginCurtainReveal } from '../components/animations/ScrollReveal';
 
@@ -80,7 +81,7 @@ export const DestinationDetailPage: React.FC<DestinationDetailPageProps> = ({ sl
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/40 pointer-events-none" />
 
         {/* Back navigation & floating header */}
-        <div className="absolute top-24 left-0 right-0 z-20 max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
+        <div className="absolute top-24 left-0 right-0 z-20 max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 flex items-center justify-between gap-4">
           <button
             onClick={() => onNavigate('/destinations')}
             className="inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] font-semibold text-white/80 hover:text-white transition-colors cursor-pointer bg-black/40 backdrop-blur-md px-4 py-2 border border-white/10"
@@ -88,6 +89,17 @@ export const DestinationDetailPage: React.FC<DestinationDetailPageProps> = ({ sl
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>All Destinations</span>
           </button>
+          <WishlistButton
+            item={{
+              itemId: destination.id,
+              itemType: 'destination',
+              slug: destination.slug,
+              title: destination.name,
+              heroImage: destination.heroImage,
+              location: `${destination.region}, Africa`
+            }}
+            variant="button"
+          />
         </div>
 
         {/* Hero Bottom Content */}

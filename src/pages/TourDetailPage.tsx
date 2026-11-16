@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { SAFARI_TOURS } from '../data/toursData';
 import { StorageService } from '../services/storageService';
+import { ReviewListWidget } from '../components/reviews/ReviewListWidget';
+import { WishlistButton } from '../components/common/WishlistButton';
 import { ArrowLeft, CheckCircle2, XCircle, Clock, Users, Shield, Compass, Calendar, Check, Send } from 'lucide-react';
 
 interface TourDetailPageProps {
@@ -76,7 +78,7 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({ slug, onNavigate
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
         
         <div className="absolute inset-0 flex flex-col justify-between max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 z-10">
-          <div>
+          <div className="flex items-center justify-between gap-4">
             <button
               onClick={() => onNavigate('/safari-tours')}
               className="inline-flex items-center gap-2 text-xs uppercase tracking-wider text-[#D9D0C2] hover:text-[#FFFFFF] transition-colors"
@@ -84,6 +86,18 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({ slug, onNavigate
               <ArrowLeft className="w-4 h-4" />
               <span>Back to Safari Tours</span>
             </button>
+            <WishlistButton
+              item={{
+                itemId: tour.id,
+                itemType: 'tour',
+                slug: tour.slug,
+                title: tour.title,
+                heroImage: tour.heroImage,
+                location: tour.destination,
+                priceNote: `$${tour.indicativePrice?.toLocaleString()} / person`
+              }}
+              variant="button"
+            />
           </div>
 
           <div>
@@ -385,6 +399,15 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({ slug, onNavigate
             </div>
           </div>
 
+        </div>
+
+        {/* Customer Reviews & Field Reports */}
+        <div className="mt-16">
+          <ReviewListWidget
+            targetType="tour"
+            targetSlug={tour.slug}
+            targetTitle={tour.title}
+          />
         </div>
       </div>
     </div>

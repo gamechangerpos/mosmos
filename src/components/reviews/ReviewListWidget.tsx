@@ -5,7 +5,7 @@ import { ReviewService } from '../../services/reviewService';
 import { ReviewSubmissionModal } from './ReviewSubmissionModal';
 
 interface ReviewListWidgetProps {
-  targetType?: 'package' | 'destination' | 'general';
+  targetType?: 'package' | 'destination' | 'tour' | 'stay' | 'general';
   targetSlug?: string;
   targetTitle?: string;
 }
