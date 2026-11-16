@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { DESTINATIONS } from '../data/destinationsData';
+import { useCmsDestinations } from '../services/cmsService';
 import { SAFARI_TOURS } from '../data/toursData';
 import { ACCOMMODATIONS } from '../data/staysData';
 import { CinematicVideo } from '../components/common/CinematicVideo';
@@ -49,7 +49,8 @@ const BRAND_COLORS: Record<string, string> = {
 };
 
 export const DestinationDetailPage: React.FC<DestinationDetailPageProps> = ({ slug, onNavigate }) => {
-  const destination = DESTINATIONS.find(d => d.slug === slug) || DESTINATIONS[0];
+  const { destinations } = useCmsDestinations(true);
+  const destination = destinations.find(d => d.slug === slug || d.id === slug) || destinations[0];
   const matchingTours = SAFARI_TOURS.filter(t => t.destinationSlug === destination.slug);
   const matchingStays = ACCOMMODATIONS.filter(s => s.destinationSlug === destination.slug);
 

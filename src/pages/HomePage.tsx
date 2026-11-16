@@ -7,6 +7,7 @@ import { DESTINATIONS } from '../data/destinationsData';
 import { SAFARI_TOURS } from '../data/toursData';
 import { ACCOMMODATIONS } from '../data/staysData';
 import { TRAVEL_PACKAGES } from '../data/packagesData';
+import { useCmsPackages, useCmsDestinations } from '../services/cmsService';
 import { ArrowRight, Compass, ShieldCheck, HeartHandshake, Eye, CheckCircle2 } from 'lucide-react';
 
 interface HomePageProps {
@@ -30,6 +31,11 @@ const BRAND_COLORS: Record<string, string> = {
 
 export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onHeaderVisibleChange }) => {
   const contentSectionRef = useRef<HTMLDivElement | null>(null);
+  const { destinations } = useCmsDestinations(false);
+  const { packages } = useCmsPackages(false);
+
+  const displayDestinations = destinations && destinations.length > 0 ? destinations : DESTINATIONS;
+  const displayPackages = packages && packages.length > 0 ? packages : TRAVEL_PACKAGES;
 
   const handleExploreScroll = () => {
     if (contentSectionRef.current) {
@@ -84,7 +90,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onHeaderVisibleC
                 Uganda
               </h3>
               <p className="text-sm text-[#20221F]/70 font-light leading-relaxed mb-6 max-w-sm">
-                {DESTINATIONS[0].tagline}
+                {displayDestinations[0].tagline}
               </p>
               <button
                 onClick={() => onNavigate('/destinations/uganda')}
@@ -102,8 +108,8 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onHeaderVisibleC
             className="group cursor-pointer relative h-[400px] sm:h-[500px] lg:h-[560px] overflow-hidden bg-[#20221F]"
           >
             <img
-              src={DESTINATIONS[0].heroImage}
-              alt={DESTINATIONS[0].name}
+              src={displayDestinations[0].heroImage}
+              alt={displayDestinations[0].name}
               loading="eager"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
             />
@@ -126,8 +132,8 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onHeaderVisibleC
             className="group cursor-pointer relative h-[400px] sm:h-[500px] lg:h-[560px] overflow-hidden bg-[#20221F]"
           >
             <img
-              src={DESTINATIONS[1].heroImage}
-              alt={DESTINATIONS[1].name}
+              src={displayDestinations[1].heroImage}
+              alt={displayDestinations[1].name}
               loading="lazy"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
             />
@@ -153,7 +159,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onHeaderVisibleC
                 Tanzania
               </h3>
               <p className="text-sm text-[#20221F]/70 font-light leading-relaxed mb-6 max-w-sm">
-                {DESTINATIONS[1].tagline}
+                {displayDestinations[1].tagline}
               </p>
               <button
                 onClick={() => onNavigate('/destinations/tanzania')}
@@ -168,7 +174,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onHeaderVisibleC
 
         {/* Row 3: Three-column masonry — Rwanda, Kenya, South Africa */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 mb-12">
-          {[DESTINATIONS[2], DESTINATIONS[3], DESTINATIONS[4]].map((dest, i) => {
+          {[displayDestinations[2], displayDestinations[3], displayDestinations[4]].filter(Boolean).map((dest, i) => {
             const directions: ('left' | 'up' | 'right')[] = ['left', 'up', 'right'];
             const brandColor = BRAND_COLORS[dest.slug] || '#78634B';
             return (
@@ -210,7 +216,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onHeaderVisibleC
 
         {/* Row 4: Five compact destination cards — staggered masonry */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5">
-          {[DESTINATIONS[5], DESTINATIONS[6], DESTINATIONS[7], DESTINATIONS[8], DESTINATIONS[9]].map((dest, i) => {
+          {[displayDestinations[5], displayDestinations[6], displayDestinations[7], displayDestinations[8], displayDestinations[9]].filter(Boolean).map((dest, i) => {
             const directions: ('left' | 'up' | 'down' | 'up' | 'right')[] = ['left', 'up', 'down', 'up', 'right'];
             const brandColor = BRAND_COLORS[dest.slug] || '#78634B';
             return (
@@ -491,7 +497,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onHeaderVisibleC
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-10">
-          {TRAVEL_PACKAGES.slice(0, 3).map((pkg, i) => {
+          {displayPackages.slice(0, 3).map((pkg, i) => {
             const dir: ('left' | 'up' | 'right')[] = ['left', 'up', 'right'];
             return (
               <ScrollReveal key={pkg.slug} direction={dir[i]} delay={0.15 + i * 0.12}>

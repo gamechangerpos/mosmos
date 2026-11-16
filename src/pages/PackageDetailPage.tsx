@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TRAVEL_PACKAGES } from '../data/packagesData';
+import { useCmsPackages } from '../services/cmsService';
 import { StorageService } from '../services/storageService';
 import { ArrowLeft, Clock, CheckCircle2, XCircle, Send, Check } from 'lucide-react';
 
@@ -9,7 +9,8 @@ interface PackageDetailPageProps {
 }
 
 export const PackageDetailPage: React.FC<PackageDetailPageProps> = ({ slug, onNavigate }) => {
-  const pkg = TRAVEL_PACKAGES.find(p => p.slug === slug) || TRAVEL_PACKAGES[0];
+  const { packages } = useCmsPackages(true);
+  const pkg = packages.find(p => p.slug === slug || p.id === slug) || packages[0];
 
   const [formData, setFormData] = useState({
     name: '',

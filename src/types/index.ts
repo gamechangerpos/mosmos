@@ -12,27 +12,49 @@ export type TripType =
 
 export type DestinationRegion = 'East Africa' | 'Southern Africa' | 'Middle East' | 'Asia' | 'North Africa';
 
+export type ContentPublicationStatus = 'Published' | 'Draft' | 'Unpublished';
+
+export interface GalleryMediaItem {
+  id: string;
+  title: string;
+  caption?: string;
+  url: string;
+  thumbnailUrl?: string;
+  targetType: 'destination' | 'package' | 'tour' | 'stay' | 'general';
+  targetId?: string;
+  targetName?: string;
+  createdAt: string;
+  order?: number;
+}
+
 export interface Destination {
   id: string;
   slug: string;
   name: string;
   country: string;
   region: DestinationRegion;
+  location?: string;
   tagline: string;
   heroImage: string;
   gallery: string[];
   description: string;
+  fullDescription?: string;
   keyAttractions: {
     name: string;
     description: string;
     image: string;
   }[];
   recommendedExperiences: string[];
+  highlights?: string[];
   bestTimeToVisit: string;
   climate: string;
   currency: string;
   visaInfo: string;
   wildlifeHighlights: string[];
+  featured?: boolean;
+  status?: ContentPublicationStatus;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface TourItineraryDay {
@@ -61,22 +83,39 @@ export interface SafariTour {
   physicalRating: 'Easy' | 'Moderate' | 'Challenging';
   maxGroupSize: number;
   featured?: boolean;
+  status?: ContentPublicationStatus;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface TravelPackage {
   id: string;
   slug: string;
   title: string;
+  country?: string;
+  destination?: string;
   destinations: string[];
+  location?: string;
   duration: string;
+  daysCount?: number;
+  nightsCount?: number;
   heroImage: string;
+  gallery?: string[];
   overview: string;
+  fullDescription?: string;
   highlights: string[];
   inclusions: string[];
   exclusions: string[];
+  itinerary?: TourItineraryDay[];
   indicativePrice?: number;
+  currency?: string;
+  priceType?: string;
   priceNote?: string;
   category: string;
+  featured?: boolean;
+  status?: ContentPublicationStatus;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Accommodation {

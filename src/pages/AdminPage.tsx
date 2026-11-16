@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { StorageService } from '../services/storageService';
 import { EmailService } from '../services/emailService';
 import { AnalyticsService, AnalyticsSummary } from '../services/analyticsService';
+import { CmsService } from '../services/cmsService';
+import { CmsPackageManager } from '../components/admin/CmsPackageManager';
+import { CmsDestinationManager } from '../components/admin/CmsDestinationManager';
+import { CmsGalleryManager } from '../components/admin/CmsGalleryManager';
 import { TripInquiry, InquiryStatus, BusinessSettings, NotificationLog } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { 
@@ -30,7 +34,9 @@ import {
   Smartphone, 
   Monitor, 
   Tablet, 
-  Settings 
+  Settings,
+  Layers,
+  Image as ImageIcon
 } from 'lucide-react';
 
 interface AdminPageProps {
@@ -45,7 +51,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   const [googleLoginError, setGoogleLoginError] = useState<string | null>(null);
   
   // Primary Tabs
-  const [activeTab, setActiveTab] = useState<'inquiries' | 'notifications' | 'analytics'>('inquiries');
+  const [activeTab, setActiveTab] = useState<'inquiries' | 'cms' | 'notifications' | 'analytics'>('inquiries');
+  const [activeCmsSubTab, setActiveCmsSubTab] = useState<'packages' | 'destinations' | 'gallery'>('packages');
 
   // Inquiries State
   const [inquiries, setInquiries] = useState<TripInquiry[]>([]);
@@ -128,7 +135,8 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
       setInquiries(synced);
       await loadSettingsAndLogs();
       loadAnalytics();
-      setSyncStatus('Synchronized successfully with Firestore');
+      await CmsService.seedAll();
+      setSyncStatus('Synchronized successfully with Firestore (Inquiries & CMS)');
       setTimeout(() => setSyncStatus(null), 3500);
     } catch (err) {
       setSyncStatus('Sync complete (offline cache active)');
@@ -404,7 +412,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
         )}
 
         {/* Section Tabs */}
-        <div className="max-w-7xl mx-auto mt-6 pt-4 border-t border-white/10 flex items-center gap-2">
+        <div className="max-w-7xl mx-auto mt-6 pt-4 border-t border-white/10 flex flex-wrap items-center gap-2">
           <button
             onClick={() => setActiveTab('inquiries')}
             className={`px-4 py-2 text-xs uppercase tracking-[0.15em] font-semibold flex items-center gap-2 transition-colors cursor-pointer ${
@@ -415,6 +423,18 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
           >
             <Compass className="w-4 h-4" />
             <span>Expeditions & Bookings ({totalCount})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('cms')}
+            className={`px-4 py-2 text-xs uppercase tracking-[0.15em] font-semibold flex items-center gap-2 transition-colors cursor-pointer ${
+              activeTab === 'cms'
+                ? 'bg-white text-[#20221F]'
+                : 'text-white/70 hover:text-white hover:bg-white/5'
+            }`}
+          >
+            <Layers className="w-4 h-4" />
+            <span>Website Content Management</span>
           </button>
 
           <button
@@ -723,7 +743,58 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 2: EMAIL & NOTIFICATION SETTINGS                                      */}
+        {/* TAB 2: WEBSITE CONTENT MANAGEMENT (CMS)                                  */}
+        {/* ========================================================================= */}
+        {activeTab === 'cms' && (
+          <div className="space-y-6">
+            {/* CMS Sub-Navigation Tabs */}
+            <div className="bg-[#20221F] p-2 flex flex-wrap items-center gap-2 border border-[#343C32]">
+              <button
+                onClick={() => setActiveCmsSubTab('packages')}
+                className={`px-4 py-2 text-xs uppercase font-semibold tracking-wider transition-colors cursor-pointer flex items-center gap-2 ${
+                  activeCmsSubTab === 'packages'
+                    ? 'bg-[#B69A68] text-[#20221F]'
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <Compass className="w-4 h-4" />
+                <span>Tour & Travel Packages</span>
+              </button>
+
+              <button
+                onClick={() => setActiveCmsSubTab('destinations')}
+                className={`px-4 py-2 text-xs uppercase font-semibold tracking-wider transition-colors cursor-pointer flex items-center gap-2 ${
+                  activeCmsSubTab === 'destinations'
+                    ? 'bg-[#B69A68] text-[#20221F]'
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <Globe className="w-4 h-4" />
+                <span>Destination Management</span>
+              </button>
+
+              <button
+                onClick={() => setActiveCmsSubTab('gallery')}
+                className={`px-4 py-2 text-xs uppercase font-semibold tracking-wider transition-colors cursor-pointer flex items-center gap-2 ${
+                  activeCmsSubTab === 'gallery'
+                    ? 'bg-[#B69A68] text-[#20221F]'
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <ImageIcon className="w-4 h-4" />
+                <span>Destination Gallery & Photographs</span>
+              </button>
+            </div>
+
+            {/* Sub-tab views */}
+            {activeCmsSubTab === 'packages' && <CmsPackageManager />}
+            {activeCmsSubTab === 'destinations' && <CmsDestinationManager />}
+            {activeCmsSubTab === 'gallery' && <CmsGalleryManager />}
+          </div>
+        )}
+
+        {/* ========================================================================= */}
+        {/* TAB 3: EMAIL & NOTIFICATION SETTINGS                                      */}
         {/* ========================================================================= */}
         {activeTab === 'notifications' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

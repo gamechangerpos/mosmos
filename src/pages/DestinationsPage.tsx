@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { DESTINATIONS } from '../data/destinationsData';
+import { useCmsDestinations } from '../services/cmsService';
 import { ArrowRight } from 'lucide-react';
 import { CinematicVideo } from '../components/common/CinematicVideo';
 import { SearchFilterBar } from '../components/SearchFilterBar';
@@ -24,6 +24,7 @@ const BRAND_COLORS: Record<string, string> = {
 
 export const DestinationsPage: React.FC<DestinationsPageProps> = ({ onNavigate }) => {
   const [selectedRegion, setSelectedRegion] = useState<string>('all');
+  const { destinations } = useCmsDestinations(false);
 
   const handleSearch = (params: {
     destination: string;
@@ -49,8 +50,8 @@ export const DestinationsPage: React.FC<DestinationsPageProps> = ({ onNavigate }
   ];
 
   const filtered = selectedRegion === 'all'
-    ? DESTINATIONS
-    : DESTINATIONS.filter(d => d.region === selectedRegion);
+    ? destinations
+    : destinations.filter(d => d.region === selectedRegion);
 
   return (
     <div className="pt-24 pb-24 bg-[#F7F4ED] overflow-x-hidden">

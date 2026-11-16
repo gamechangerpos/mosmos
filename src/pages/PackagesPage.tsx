@@ -1,5 +1,5 @@
 import React from 'react';
-import { TRAVEL_PACKAGES } from '../data/packagesData';
+import { useCmsPackages } from '../services/cmsService';
 import { CinematicVideo } from '../components/common/CinematicVideo';
 import { ArrowRight, Clock, CheckCircle2 } from 'lucide-react';
 import { ScrollReveal, MaskedTextReveal, ParallaxImage, VirginCurtainReveal } from '../components/animations/ScrollReveal';
@@ -9,6 +9,7 @@ interface PackagesPageProps {
 }
 
 export const PackagesPage: React.FC<PackagesPageProps> = ({ onNavigate }) => {
+  const { packages } = useCmsPackages(false);
   return (
     <div className="pt-24 pb-24 bg-[#F7F4ED] overflow-x-hidden">
       {/* Hero Header — Virgin LE Dark Editorial Hero */}
@@ -45,7 +46,7 @@ export const PackagesPage: React.FC<PackagesPageProps> = ({ onNavigate }) => {
       {/* Packages Grid with Floating Badges & Curtain Reveals */}
       <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-10">
-          {TRAVEL_PACKAGES.map((pkg, idx) => (
+          {packages.map((pkg, idx) => (
             <ScrollReveal key={pkg.slug} direction="up" delay={0.1 + (idx % 3) * 0.1}>
               <div
                 onClick={() => onNavigate(`/travel-packages/${pkg.slug}`)}
