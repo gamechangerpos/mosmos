@@ -41,6 +41,7 @@ export const Header: React.FC<HeaderProps> = ({
     { label: 'Safari Tours', path: '/safari-tours' },
     { label: 'Stays', path: '/stays' },
     { label: 'Packages', path: '/travel-packages' },
+    { label: 'Gallery', path: '/gallery' },
     { label: 'About', path: '/about' },
   ];
 

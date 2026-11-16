@@ -6,7 +6,11 @@ import { CmsService } from '../services/cmsService';
 import { CmsPackageManager } from '../components/admin/CmsPackageManager';
 import { CmsDestinationManager } from '../components/admin/CmsDestinationManager';
 import { CmsGalleryManager } from '../components/admin/CmsGalleryManager';
-import { TripInquiry, InquiryStatus, BusinessSettings, NotificationLog } from '../types';
+import { AdminSupportChatManager } from '../components/admin/AdminSupportChatManager';
+import { AdminReviewModerator } from '../components/admin/AdminReviewModerator';
+import { AdminMarketingManager } from '../components/admin/AdminMarketingManager';
+import { PortalService, JOURNEY_STAGES } from '../services/portalService';
+import { TripInquiry, InquiryStatus, JourneyStage, BusinessSettings, NotificationLog } from '../types';
 import { useAuth } from '../context/AuthContext';
 import { 
   ShieldCheck, 
@@ -50,9 +54,11 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   const [pinError, setPinError] = useState(false);
   const [googleLoginError, setGoogleLoginError] = useState<string | null>(null);
   
-  // Primary Tabs
-  const [activeTab, setActiveTab] = useState<'inquiries' | 'cms' | 'notifications' | 'analytics'>('inquiries');
-  const [activeCmsSubTab, setActiveCmsSubTab] = useState<'packages' | 'destinations' | 'gallery'>('packages');
+  // Primary 4 Operational Pillars
+  const [activePillar, setActivePillar] = useState<'operations' | 'cms' | 'marketing' | 'system'>('operations');
+  const [activeOpsSubTab, setActiveOpsSubTab] = useState<'inquiries' | 'messages'>('inquiries');
+  const [activeCmsSubTab, setActiveCmsSubTab] = useState<'packages' | 'destinations' | 'gallery' | 'reviews'>('packages');
+  const [activeSystemSubTab, setActiveSystemSubTab] = useState<'email' | 'analytics' | 'rules'>('email');
 
   // Inquiries State
   const [inquiries, setInquiries] = useState<TripInquiry[]>([]);
@@ -62,8 +68,11 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<string | null>(null);
 
-  // Editing state for inquiry
+  // Editing state for inquiry & 10-stage journey
   const [editStatus, setEditStatus] = useState<InquiryStatus>('PENDING_REVIEW');
+  const [editJourneyStage, setEditJourneyStage] = useState<JourneyStage>('Inquiry received');
+  const [editConsultantName, setEditConsultantName] = useState('Senior Expedition Director');
+  const [editConsultantEmail, setEditConsultantEmail] = useState('concierge@mosmossafaris.com');
   const [editStatusNotes, setEditStatusNotes] = useState('');
   const [editAdminNote, setEditAdminNote] = useState('');
   const [editQuotedAmount, setEditQuotedAmount] = useState<number>(0);
@@ -177,13 +186,16 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   const handleSelectInquiry = (inq: TripInquiry) => {
     setSelectedInquiry(inq);
     setEditStatus(inq.status);
+    setEditJourneyStage(inq.journeyStage || 'Inquiry received');
+    setEditConsultantName(inq.assignedConsultant?.name || 'Senior Expedition Director');
+    setEditConsultantEmail(inq.assignedConsultant?.email || 'concierge@mosmossafaris.com');
     setEditStatusNotes(inq.statusNotes || '');
     setEditQuotedAmount(inq.quotedAmount || 0);
     setEditAdminNote('');
     setSaveSuccess(false);
   };
 
-  const handleSaveStatus = (e: React.FormEvent) => {
+  const handleSaveStatus = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedInquiry) return;
 
@@ -195,9 +207,23 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
       editQuotedAmount || undefined
     );
 
+    await PortalService.updateJourneyStage(
+      selectedInquiry.reference,
+      editJourneyStage,
+      editStatusNotes,
+      {
+        name: editConsultantName,
+        email: editConsultantEmail
+      }
+    );
+
     loadData();
     const updated = StorageService.findInquiryByReference(selectedInquiry.reference);
-    setSelectedInquiry(updated);
+    if (updated) {
+      updated.journeyStage = editJourneyStage;
+      updated.assignedConsultant = { name: editConsultantName, email: editConsultantEmail };
+      setSelectedInquiry(updated);
+    }
     setEditAdminNote('');
     setSaveSuccess(true);
     setTimeout(() => setSaveSuccess(false), 3000);
@@ -411,54 +437,54 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
           </div>
         )}
 
-        {/* Section Tabs */}
+        {/* 4 Consolidated Operational Pillars */}
         <div className="max-w-7xl mx-auto mt-6 pt-4 border-t border-white/10 flex flex-wrap items-center gap-2">
           <button
-            onClick={() => setActiveTab('inquiries')}
+            onClick={() => setActivePillar('operations')}
             className={`px-4 py-2 text-xs uppercase tracking-[0.15em] font-semibold flex items-center gap-2 transition-colors cursor-pointer ${
-              activeTab === 'inquiries'
-                ? 'bg-white text-[#20221F]'
+              activePillar === 'operations'
+                ? 'bg-[#B69A68] text-[#20221F]'
                 : 'text-white/70 hover:text-white hover:bg-white/5'
             }`}
           >
             <Compass className="w-4 h-4" />
-            <span>Expeditions & Bookings ({totalCount})</span>
+            <span>Pillar 1: Operations & Bookings ({totalCount})</span>
           </button>
 
           <button
-            onClick={() => setActiveTab('cms')}
+            onClick={() => setActivePillar('cms')}
             className={`px-4 py-2 text-xs uppercase tracking-[0.15em] font-semibold flex items-center gap-2 transition-colors cursor-pointer ${
-              activeTab === 'cms'
-                ? 'bg-white text-[#20221F]'
+              activePillar === 'cms'
+                ? 'bg-[#B69A68] text-[#20221F]'
                 : 'text-white/70 hover:text-white hover:bg-white/5'
             }`}
           >
             <Layers className="w-4 h-4" />
-            <span>Website Content Management</span>
+            <span>Pillar 2: Content Management (CMS)</span>
           </button>
 
           <button
-            onClick={() => setActiveTab('notifications')}
+            onClick={() => setActivePillar('marketing')}
             className={`px-4 py-2 text-xs uppercase tracking-[0.15em] font-semibold flex items-center gap-2 transition-colors cursor-pointer ${
-              activeTab === 'notifications'
-                ? 'bg-white text-[#20221F]'
+              activePillar === 'marketing'
+                ? 'bg-[#B69A68] text-[#20221F]'
                 : 'text-white/70 hover:text-white hover:bg-white/5'
             }`}
           >
-            <Mail className="w-4 h-4" />
-            <span>Email & Notification Settings</span>
+            <Send className="w-4 h-4" />
+            <span>Pillar 3: Marketing & Communications</span>
           </button>
 
           <button
-            onClick={() => setActiveTab('analytics')}
+            onClick={() => setActivePillar('system')}
             className={`px-4 py-2 text-xs uppercase tracking-[0.15em] font-semibold flex items-center gap-2 transition-colors cursor-pointer ${
-              activeTab === 'analytics'
-                ? 'bg-white text-[#20221F]'
+              activePillar === 'system'
+                ? 'bg-[#B69A68] text-[#20221F]'
                 : 'text-white/70 hover:text-white hover:bg-white/5'
             }`}
           >
-            <BarChart3 className="w-4 h-4" />
-            <span>Website Analytics</span>
+            <Settings className="w-4 h-4" />
+            <span>Pillar 4: System & Email Settings</span>
           </button>
         </div>
       </div>
@@ -466,9 +492,39 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         {/* ========================================================================= */}
-        {/* TAB 1: EXPEDITIONS & BOOKINGS                                             */}
+        {/* PILLAR 1: OPERATIONS & BOOKINGS                                           */}
         {/* ========================================================================= */}
-        {activeTab === 'inquiries' && (
+        {activePillar === 'operations' && (
+          <div className="space-y-6">
+            <div className="bg-[#20221F] p-2 flex flex-wrap items-center gap-2 border border-[#343C32]">
+              <button
+                onClick={() => setActiveOpsSubTab('inquiries')}
+                className={`px-4 py-2 text-xs uppercase font-semibold tracking-wider transition-colors cursor-pointer flex items-center gap-2 ${
+                  activeOpsSubTab === 'inquiries'
+                    ? 'bg-[#B69A68] text-[#20221F]'
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <Compass className="w-4 h-4" />
+                <span>Expeditions & 10-Stage Tracking ({totalCount})</span>
+              </button>
+
+              <button
+                onClick={() => setActiveOpsSubTab('messages')}
+                className={`px-4 py-2 text-xs uppercase font-semibold tracking-wider transition-colors cursor-pointer flex items-center gap-2 ${
+                  activeOpsSubTab === 'messages'
+                    ? 'bg-[#B69A68] text-[#20221F]'
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <Mail className="w-4 h-4" />
+                <span>Patron Concierge Messaging Inbox</span>
+              </button>
+            </div>
+
+            {activeOpsSubTab === 'messages' ? (
+              <AdminSupportChatManager />
+            ) : (
           <div>
             {/* Metric Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
@@ -676,6 +732,52 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                         </select>
                       </div>
 
+                      {/* 10-Stage Journey Tracking Selector */}
+                      <div>
+                        <label className="text-[10px] uppercase tracking-wider text-[#78634B] font-semibold block mb-1">
+                          10-Stage Customer Portal Journey Timeline Stage
+                        </label>
+                        <select
+                          value={editJourneyStage}
+                          onChange={(e) => setEditJourneyStage(e.target.value as JourneyStage)}
+                          className="w-full bg-[#F7F4ED] border border-[#B69A68] text-xs px-3 py-2 focus:outline-none font-medium"
+                        >
+                          {JOURNEY_STAGES.map((s) => (
+                            <option key={s.stage} value={s.stage}>
+                              Stage {s.order}: {s.label} — {s.stage}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Assigned Consultant Inputs */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[10px] uppercase tracking-wider text-[#20221F]/70 font-semibold block mb-1">
+                            Assigned Safari Consultant Name
+                          </label>
+                          <input
+                            type="text"
+                            value={editConsultantName}
+                            onChange={(e) => setEditConsultantName(e.target.value)}
+                            placeholder="e.g. Samuel K. (Lead Guide)"
+                            className="w-full bg-[#F7F4ED] border border-[#D9D0C2] text-xs px-3 py-2 focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-[10px] uppercase tracking-wider text-[#20221F]/70 font-semibold block mb-1">
+                            Consultant Email
+                          </label>
+                          <input
+                            type="email"
+                            value={editConsultantEmail}
+                            onChange={(e) => setEditConsultantEmail(e.target.value)}
+                            placeholder="e.g. samuel@mosmossafaris.com"
+                            className="w-full bg-[#F7F4ED] border border-[#D9D0C2] text-xs px-3 py-2 focus:outline-none"
+                          />
+                        </div>
+                      </div>
+
                       <div>
                         <label className="text-[10px] uppercase tracking-wider text-[#20221F]/70 font-semibold block mb-1">
                           Quoted Total Amount ($ USD)
@@ -740,12 +842,14 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
 
             </div>
           </div>
+            )}
+          </div>
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 2: WEBSITE CONTENT MANAGEMENT (CMS)                                  */}
+        {/* PILLAR 2: WEBSITE CONTENT MANAGEMENT (CMS)                                */}
         {/* ========================================================================= */}
-        {activeTab === 'cms' && (
+        {activePillar === 'cms' && (
           <div className="space-y-6">
             {/* CMS Sub-Navigation Tabs */}
             <div className="bg-[#20221F] p-2 flex flex-wrap items-center gap-2 border border-[#343C32]">
@@ -784,20 +888,81 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 <ImageIcon className="w-4 h-4" />
                 <span>Destination Gallery & Photographs</span>
               </button>
+
+              <button
+                onClick={() => setActiveCmsSubTab('reviews')}
+                className={`px-4 py-2 text-xs uppercase font-semibold tracking-wider transition-colors cursor-pointer flex items-center gap-2 ${
+                  activeCmsSubTab === 'reviews'
+                    ? 'bg-[#B69A68] text-[#20221F]'
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <ShieldCheck className="w-4 h-4" />
+                <span>Patron Reviews Moderation</span>
+              </button>
             </div>
 
             {/* Sub-tab views */}
             {activeCmsSubTab === 'packages' && <CmsPackageManager />}
             {activeCmsSubTab === 'destinations' && <CmsDestinationManager />}
             {activeCmsSubTab === 'gallery' && <CmsGalleryManager />}
+            {activeCmsSubTab === 'reviews' && <AdminReviewModerator />}
           </div>
         )}
 
         {/* ========================================================================= */}
-        {/* TAB 3: EMAIL & NOTIFICATION SETTINGS                                      */}
+        {/* PILLAR 3: MARKETING & COMMUNICATIONS                                     */}
         {/* ========================================================================= */}
-        {activeTab === 'notifications' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        {activePillar === 'marketing' && (
+          <AdminMarketingManager />
+        )}
+
+        {/* ========================================================================= */}
+        {/* PILLAR 4: SYSTEM & EMAIL SETTINGS                                         */}
+        {/* ========================================================================= */}
+        {activePillar === 'system' && (
+          <div className="space-y-6">
+            {/* System Sub-Navigation Tabs */}
+            <div className="bg-[#20221F] p-2 flex flex-wrap items-center gap-2 border border-[#343C32]">
+              <button
+                onClick={() => setActiveSystemSubTab('email')}
+                className={`px-4 py-2 text-xs uppercase font-semibold tracking-wider transition-colors cursor-pointer flex items-center gap-2 ${
+                  activeSystemSubTab === 'email'
+                    ? 'bg-[#B69A68] text-[#20221F]'
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <Mail className="w-4 h-4" />
+                <span>Email & Gmail SMTP Dispatch</span>
+              </button>
+
+              <button
+                onClick={() => setActiveSystemSubTab('analytics')}
+                className={`px-4 py-2 text-xs uppercase font-semibold tracking-wider transition-colors cursor-pointer flex items-center gap-2 ${
+                  activeSystemSubTab === 'analytics'
+                    ? 'bg-[#B69A68] text-[#20221F]'
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <BarChart3 className="w-4 h-4" />
+                <span>Website Visitor Analytics</span>
+              </button>
+
+              <button
+                onClick={() => setActiveSystemSubTab('rules')}
+                className={`px-4 py-2 text-xs uppercase font-semibold tracking-wider transition-colors cursor-pointer flex items-center gap-2 ${
+                  activeSystemSubTab === 'rules'
+                    ? 'bg-[#B69A68] text-[#20221F]'
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <ShieldCheck className="w-4 h-4" />
+                <span>Security Rules & $0.00 Free-Tier Monitor</span>
+              </button>
+            </div>
+
+            {activeSystemSubTab === 'email' && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             
             {/* Left Column: Configuration Form */}
             <div className="lg:col-span-7 bg-white border border-[#D9D0C2] p-6 sm:p-8 shadow-sm">
@@ -1165,13 +1330,11 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
 
             </div>
 
-          </div>
-        )}
+              </div>
+            )}
 
-        {/* ========================================================================= */}
-        {/* TAB 3: WEBSITE VISITOR ANALYTICS                                          */}
-        {/* ========================================================================= */}
-        {activeTab === 'analytics' && analyticsData && (
+            {/* Sub-tab 2: Website Visitor Analytics */}
+            {activeSystemSubTab === 'analytics' && analyticsData && (
           <div>
             {/* Filter Bar */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-4 border border-[#D9D0C2] mb-6 shadow-sm">
@@ -1506,9 +1669,82 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
               </div>
 
             </div>
-
           </div>
         )}
+
+        {/* Sub-tab 3: Security & Free-Tier Rules Status */}
+        {activeSystemSubTab === 'rules' && (
+          <div className="bg-white border border-[#D9D0C2] p-6 sm:p-8 rounded-sm shadow-sm space-y-6">
+            <div className="flex items-center gap-2 pb-4 border-b border-[#D9D0C2]">
+              <ShieldCheck className="w-5 h-5 text-emerald-700" />
+              <div>
+                <h3 className="font-serif text-2xl font-light text-[#20221F]">
+                  $0.00 Cost Guarantee & Architecture Guard
+                </h3>
+                <p className="text-xs text-[#20221F]/60">
+                  Real-time validation of Firebase Spark Plan, Vercel Serverless runtime, and Gmail SMTP transport.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="p-5 bg-emerald-50/50 border border-emerald-300 rounded-sm">
+                <span className="text-[10px] uppercase tracking-wider text-emerald-800 font-bold block mb-1">
+                  Firebase Database Plan
+                </span>
+                <span className="font-serif text-xl font-medium text-emerald-900 block">
+                  Spark (100% Free Forever)
+                </span>
+                <p className="text-[11px] text-emerald-800/80 mt-1 leading-relaxed">
+                  Zero paid extensions activated. All operations run strictly within 1 GB storage and daily Spark quotas.
+                </p>
+              </div>
+
+              <div className="p-5 bg-emerald-50/50 border border-emerald-300 rounded-sm">
+                <span className="text-[10px] uppercase tracking-wider text-emerald-800 font-bold block mb-1">
+                  Email Dispatch Architecture
+                </span>
+                <span className="font-serif text-xl font-medium text-emerald-900 block">
+                  Gmail SMTP + Nodemailer
+                </span>
+                <p className="text-[11px] text-emerald-800/80 mt-1 leading-relaxed">
+                  Authenticated Google App Password via Vercel serverless function (<code>/api/inquire</code>) with cross-linked Reply-To.
+                </p>
+              </div>
+
+              <div className="p-5 bg-emerald-50/50 border border-emerald-300 rounded-sm">
+                <span className="text-[10px] uppercase tracking-wider text-emerald-800 font-bold block mb-1">
+                  Media & Asset Compression
+                </span>
+                <span className="font-serif text-xl font-medium text-emerald-900 block">
+                  Client WebP + Firebase Storage
+                </span>
+                <p className="text-[11px] text-emerald-800/80 mt-1 leading-relaxed">
+                  Zero external image CDN bills. Images compressed client-side to optimized WebP format before storage.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-5 bg-[#F7F4ED] border border-[#D9D0C2] rounded-sm">
+              <h4 className="font-serif text-base text-[#20221F] mb-2">
+                Active Firestore Collections Protected by Rules:
+              </h4>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+                <div className="p-2 bg-white border border-[#D9D0C2] text-[#20221F]">customers/</div>
+                <div className="p-2 bg-white border border-[#D9D0C2] text-[#20221F]">inquiries/</div>
+                <div className="p-2 bg-white border border-[#D9D0C2] text-[#20221F]">conversations/</div>
+                <div className="p-2 bg-white border border-[#D9D0C2] text-[#20221F]">reviews/</div>
+                <div className="p-2 bg-white border border-[#D9D0C2] text-[#20221F]">gallery_stories/</div>
+                <div className="p-2 bg-white border border-[#D9D0C2] text-[#20221F]">subscribers/</div>
+                <div className="p-2 bg-white border border-[#D9D0C2] text-[#20221F]">campaigns/</div>
+                <div className="p-2 bg-white border border-[#D9D0C2] text-[#20221F]">cms_packages/</div>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </div>
+    )}
 
       </div>
     </div>

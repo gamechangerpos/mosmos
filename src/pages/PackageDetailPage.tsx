@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useCmsPackages } from '../services/cmsService';
 import { StorageService } from '../services/storageService';
+import { ReviewListWidget } from '../components/reviews/ReviewListWidget';
 import { ArrowLeft, Clock, CheckCircle2, XCircle, Send, Check } from 'lucide-react';
 
 interface PackageDetailPageProps {
@@ -273,6 +274,16 @@ export const PackageDetailPage: React.FC<PackageDetailPageProps> = ({ slug, onNa
           </div>
 
         </div>
+
+        {/* Customer Reviews & Feedback */}
+        <div className="mt-12">
+          <ReviewListWidget
+            targetType="package"
+            targetSlug={pkg.slug}
+            targetTitle={pkg.title}
+          />
+        </div>
+
       </div>
     </div>
   );

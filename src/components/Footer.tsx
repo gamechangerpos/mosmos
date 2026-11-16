@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowRight, Compass, ShieldCheck, Mail, MapPin, Phone, CheckCircle } from 'lucide-react';
+import { MarketingService } from '../services/marketingService';
 
 interface FooterProps {
   onNavigate: (path: string) => void;
@@ -17,9 +18,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
     }
   };
 
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newsletterEmail.trim()) {
+      await MarketingService.subscribe(newsletterEmail.trim(), undefined, ['Wildlife Safaris', 'Savanna Dispatch']);
       setNewsletterSubscribed(true);
       setNewsletterEmail('');
     }
@@ -132,6 +134,11 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               <li>
                 <button onClick={() => onNavigate('/travel-packages')} className="text-[#D9D0C2]/70 hover:text-[#B69A68] transition-colors">
                   Curated Packages
+                </button>
+              </li>
+              <li>
+                <button onClick={() => onNavigate('/gallery')} className="text-[#D9D0C2]/70 hover:text-[#B69A68] transition-colors">
+                  Photo Gallery & Stories
                 </button>
               </li>
               <li>

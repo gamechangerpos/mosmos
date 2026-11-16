@@ -3,6 +3,7 @@ import { useCmsDestinations } from '../services/cmsService';
 import { SAFARI_TOURS } from '../data/toursData';
 import { ACCOMMODATIONS } from '../data/staysData';
 import { CinematicVideo } from '../components/common/CinematicVideo';
+import { ReviewListWidget } from '../components/reviews/ReviewListWidget';
 import { ArrowLeft, ArrowRight, CheckCircle2, Calendar, Sun, DollarSign, FileText, Compass, Sparkles, MapPin } from 'lucide-react';
 import { ScrollReveal, MaskedTextReveal, ParallaxImage, VirginCurtainReveal } from '../components/animations/ScrollReveal';
 
@@ -431,6 +432,15 @@ export const DestinationDetailPage: React.FC<DestinationDetailPageProps> = ({ sl
             </div>
           </div>
         )}
+
+        {/* Verified Traveler Reviews & Field Reports */}
+        <div className="mt-16">
+          <ReviewListWidget
+            targetType="destination"
+            targetSlug={destination.slug}
+            targetTitle={destination.name}
+          />
+        </div>
 
       </div>
     </div>

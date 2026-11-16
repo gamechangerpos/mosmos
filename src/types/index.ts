@@ -201,8 +201,11 @@ export interface TripInquiry {
   customerName: string;
   customerEmail: string;
   customerPhone: string;
+  customerId?: string;
   preferredContact: 'email' | 'phone' | 'whatsapp';
   destinations: string[];
+  packageName?: string;
+  country?: string;
   travelDates: string;
   durationDays?: number;
   adultsCount: number;
@@ -213,6 +216,17 @@ export interface TripInquiry {
   accommodationType: string;
   notes?: string;
   status: InquiryStatus;
+  journeyStage?: JourneyStage;
+  journeyUpdates?: StageUpdateLog[];
+  assignedConsultant?: {
+    name: string;
+    email: string;
+    phone?: string;
+    role?: string;
+    avatar?: string;
+  };
+  documents?: TravelDocument[];
+  paymentStatus?: 'Deposit Pending' | 'Deposit Paid' | 'Paid in Full' | 'Invoice Issued' | 'Complimentary';
   statusNotes?: string;
   adminNotes?: string[];
   assignedAdmin?: string;
@@ -276,3 +290,189 @@ export interface FAQItem {
   question: string;
   answer: string;
 }
+
+// ============================================================================
+// CLIENT PORTAL & JOURNEY TRACKING TYPES (MASTER PROMPT SPECIFICATION)
+// ============================================================================
+
+export type JourneyStage =
+  | 'Inquiry received'
+  | 'Inquiry under review'
+  | 'Travel planning'
+  | 'Proposal sent'
+  | 'Awaiting customer decision'
+  | 'Booking confirmed'
+  | 'Travel preparation'
+  | 'Trip in progress'
+  | 'Trip completed'
+  | 'Cancelled';
+
+export interface StageUpdateLog {
+  stage: JourneyStage;
+  timestamp: string;
+  notes?: string;
+  updatedBy?: string;
+}
+
+export interface TravelDocument {
+  id: string;
+  name: string;
+  type: 'Itinerary PDF' | 'Voucher' | 'Permit' | 'Packing List' | 'Invoice';
+  url: string;
+  uploadedAt: string;
+}
+
+export interface CustomerPreferences {
+  dietaryRequirements: string;
+  mobilityRequirements: string;
+  preferredTravelStyles: string[];
+  preferredAccommodations: string[];
+  pastSafariExperience: string;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  passportExpiryDate?: string;
+  notes?: string;
+  updatedAt?: string;
+}
+
+export interface SupportMessage {
+  id: string;
+  senderId: string;
+  senderName: string;
+  senderRole: 'customer' | 'admin' | 'consultant';
+  message: string;
+  createdAt: string;
+  read: boolean;
+}
+
+export interface SupportConversation {
+  id: string;
+  customerId: string;
+  customerName: string;
+  customerEmail: string;
+  bookingReference?: string;
+  subject: string;
+  status: 'open' | 'pending_admin' | 'resolved';
+  lastMessageAt: string;
+  lastMessageSnippet: string;
+  unreadForAdminCount: number;
+  unreadForCustomerCount: number;
+}
+
+export interface WishlistItem {
+  id: string;
+  customerId: string;
+  itemType: 'package' | 'destination';
+  itemId: string;
+  slug: string;
+  title: string;
+  heroImage: string;
+  location?: string;
+  priceNote?: string;
+  addedAt: string;
+}
+
+export interface TravelMemory {
+  id: string;
+  customerId: string;
+  destination: string;
+  country: string;
+  year: number;
+  travelDates: string;
+  notes: string;
+  photos: string[];
+  createdAt: string;
+}
+
+export type LoyaltyTier = 'Bronze' | 'Silver' | 'Gold' | 'Elite';
+
+export interface LoyaltyProfile {
+  customerId: string;
+  tier: LoyaltyTier;
+  points: number;
+  completedTripsCount: number;
+  referralCode: string;
+  referralsCount: number;
+  referralRewardsEarned: number;
+  createdAt: string;
+}
+
+export interface GroupTripInvitation {
+  email: string;
+  invitedAt: string;
+  status: 'invited' | 'accepted' | 'declined';
+}
+
+export interface GroupTrip {
+  id: string;
+  creatorId: string;
+  creatorName: string;
+  tripTitle: string;
+  destination: string;
+  travelDates: string;
+  groupNotes?: string;
+  invitations: GroupTripInvitation[];
+  createdAt: string;
+}
+
+// ============================================================================
+// GALLERY, REVIEWS & MARKETING TYPES
+// ============================================================================
+
+export interface GalleryStory {
+  id: string;
+  slug: string;
+  title: string;
+  caption: string;
+  story: string;
+  coverImage: string;
+  images: string[];
+  destination: string;
+  country: string;
+  category: 'Wildlife' | 'Safari' | 'Gorilla Trekking' | 'Beach' | 'Cultural' | 'Luxury Lodges' | 'Aerial';
+  year: number;
+  photographer?: string;
+  relatedPackageSlug?: string;
+  featured?: boolean;
+  createdAt: string;
+}
+
+export interface CustomerReview {
+  id: string;
+  targetType: 'package' | 'destination' | 'general';
+  targetSlug?: string;
+  targetTitle?: string;
+  rating: number; // 1-5
+  authorName: string;
+  authorLocation?: string;
+  tripType: string;
+  travelDate: string;
+  title: string;
+  comment: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
+}
+
+export interface NewsletterSubscriber {
+  id: string;
+  email: string;
+  name?: string;
+  interestTags: string[];
+  subscribedAt: string;
+  status: 'active' | 'unsubscribed';
+  unsubscribedAt?: string;
+}
+
+export interface MarketingCampaign {
+  id: string;
+  title: string;
+  subject: string;
+  previewText: string;
+  bodyHtml: string;
+  targetTags: string[];
+  sentAt?: string;
+  recipientCount?: number;
+  status: 'draft' | 'sent';
+  createdAt: string;
+}
+

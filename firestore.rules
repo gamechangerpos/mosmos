@@ -20,20 +20,46 @@ service cloud.firestore {
       );
     }
 
-    // 1. Customer Profiles
+    // 1. Customer Profiles & Subcollections (Wishlist, Memories, Loyalty)
     match /customers/{userId} {
       allow read, update: if isOwner(userId) || isAdmin();
       allow create: if isOwner(userId) || isAdmin();
       allow delete: if isAdmin();
+
+      match /wishlist/{itemId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+
+      match /memories/{memoryId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
+
+      match /meta/{metaId} {
+        allow read, write: if isOwner(userId) || isAdmin();
+      }
     }
 
-    // 2. Administrators Ledger (Cannot be self-assigned)
-    match /admins/{userId} {
-      allow read: if isAuthenticated();
-      allow write: if isAdmin();
+    // 2. Customer Travel Preferences
+    match /customer_preferences/{userId} {
+      allow read, write: if isOwner(userId) || isAdmin();
     }
 
-    // 3. Trip & Safari Inquiries
+    // 3. Support Conversations & Chat Threads
+    match /conversations/{convId} {
+      allow read, create, update: if isAuthenticated() || isAdmin();
+
+      match /messages/{messageId} {
+        allow read, create: if isAuthenticated() || isAdmin();
+      }
+    }
+
+    // 4. Group Trips & Invitations
+    match /group_trips/{tripId} {
+      allow read, create, update: if isAuthenticated() || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // 5. Trip & Safari Inquiries
     match /inquiries/{inquiryId} {
       // Anyone can submit a trip inquiry
       allow create: if request.resource.data.customerEmail is string;
@@ -48,7 +74,7 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
-    // 4. Tour & Accommodation Bookings
+    // 6. Tour & Accommodation Bookings
     match /bookings/{bookingId} {
       allow create: if request.resource.data.customerEmail is string;
       allow read: if isAdmin() || (
@@ -60,21 +86,49 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
-    // 5. Contact Messages
-    match /contactMessages/{messageId} {
-      // Anyone can send a message via contact form
-      allow create: if request.resource.data.email is string;
-      // Only admins can read or manage customer contact messages
-      allow read, update, delete: if isAdmin();
+    // 7. Verified Customer Reviews & Moderation
+    match /reviews/{reviewId} {
+      // Public can read approved reviews
+      allow read: if resource.data.status == 'approved' || isAdmin();
+      // Anyone can submit a review with pending status
+      allow create: if request.resource.data.rating is number;
+      // Only admins can moderate (approve/reject)
+      allow update, delete: if isAdmin();
     }
 
-    // 6. Newsletter Subscribers
-    match /newsletter/{subscriberId} {
-      allow create: if request.resource.data.email is string;
-      allow read, update, delete: if isAdmin();
+    // 8. Public Travel Gallery Stories
+    match /gallery_stories/{storyId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
-    // 7. Public Content: Destinations, Tours, Packages, Stays, Testimonials
+    // 9. Marketing Subscribers & Campaigns
+    match /subscribers/{subscriberId} {
+      allow create, update: if request.resource.data.email is string;
+      allow read, delete: if isAdmin();
+    }
+
+    match /campaigns/{campaignId} {
+      allow read, write: if isAdmin();
+    }
+
+    // 10. CMS Managed Content (Packages, Destinations, Gallery)
+    match /cms_packages/{packageId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /cms_destinations/{destinationId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /cms_gallery/{mediaId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // 11. Legacy Public Content
     match /destinations/{docId} {
       allow read: if true;
       allow write: if isAdmin();
@@ -100,7 +154,19 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // 8. Website & Business Settings
+    // 12. Contact Messages
+    match /contactMessages/{messageId} {
+      allow create: if request.resource.data.email is string;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // 13. Administrators Ledger
+    match /admins/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+
+    // 14. Website & Business Settings
     match /settings/{settingId} {
       allow read: if true;
       allow write: if isAdmin();
@@ -111,7 +177,7 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-    // 9. Automated Email Queue & Audit Logs
+    // 15. Automated Email Queue & Audit Logs
     match /mail/{mailId} {
       allow create: if true;
       allow read, update, delete: if isAdmin();
@@ -123,7 +189,7 @@ service cloud.firestore {
       allow update: if isAdmin();
     }
 
-    // 10. Visitor Analytics Aggregation (Privacy-Preserving Counters)
+    // 16. Visitor Analytics
     match /analyticsDaily/{dayId} {
       allow read: if isAdmin();
       allow write: if true;

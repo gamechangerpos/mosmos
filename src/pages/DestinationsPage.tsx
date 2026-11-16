@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { useCmsDestinations } from '../services/cmsService';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Scale, MapPin } from 'lucide-react';
 import { CinematicVideo } from '../components/common/CinematicVideo';
 import { SearchFilterBar } from '../components/SearchFilterBar';
 import { ScrollReveal, MaskedTextReveal, ParallaxImage, VirginCurtainReveal } from '../components/animations/ScrollReveal';
+import { InteractiveTravelMap } from '../components/common/InteractiveTravelMap';
+import { DestinationComparisonModal } from '../components/destinations/DestinationComparisonModal';
 
 interface DestinationsPageProps {
   onNavigate: (path: string) => void;
@@ -24,6 +26,7 @@ const BRAND_COLORS: Record<string, string> = {
 
 export const DestinationsPage: React.FC<DestinationsPageProps> = ({ onNavigate }) => {
   const [selectedRegion, setSelectedRegion] = useState<string>('all');
+  const [isComparisonOpen, setIsComparisonOpen] = useState(false);
   const { destinations } = useCmsDestinations(false);
 
   const handleSearch = (params: {
@@ -87,7 +90,7 @@ export const DestinationsPage: React.FC<DestinationsPageProps> = ({ onNavigate }
 
           {/* Region Tabs — Virgin LE minimalist pills */}
           <ScrollReveal direction="up" delay={0.4}>
-            <div className="flex flex-wrap justify-center gap-2 pt-6 border-t border-white/10 max-w-3xl mx-auto">
+            <div className="flex flex-wrap justify-center items-center gap-2 pt-6 border-t border-white/10 max-w-4xl mx-auto">
               {regions.map((reg) => (
                 <button
                   key={reg.id}
@@ -101,6 +104,14 @@ export const DestinationsPage: React.FC<DestinationsPageProps> = ({ onNavigate }
                   {reg.label}
                 </button>
               ))}
+
+              <button
+                onClick={() => setIsComparisonOpen(true)}
+                className="px-5 py-2 text-[11px] font-semibold tracking-[0.15em] uppercase transition-all duration-300 cursor-pointer bg-white/10 hover:bg-[#B69A68] hover:text-[#0f0f0f] text-[#B69A68] border border-[#B69A68]/40 flex items-center gap-1.5"
+              >
+                <Scale className="w-3.5 h-3.5" />
+                <span>Compare Territories</span>
+              </button>
             </div>
           </ScrollReveal>
         </div>
@@ -110,6 +121,16 @@ export const DestinationsPage: React.FC<DestinationsPageProps> = ({ onNavigate }
       <div className="relative -mt-8 mb-12 z-20 max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">
         <ScrollReveal direction="up" delay={0.15}>
           <SearchFilterBar onSearch={handleSearch} />
+        </ScrollReveal>
+      </div>
+
+      {/* Interactive African Expedition Map */}
+      <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 mb-16">
+        <ScrollReveal direction="up" delay={0.2}>
+          <InteractiveTravelMap
+            onNavigate={onNavigate}
+            highlightedDestinations={['uganda', 'kenya', 'tanzania', 'rwanda', 'botswana', 'zanzibar']}
+          />
         </ScrollReveal>
       </div>
 
@@ -189,6 +210,13 @@ export const DestinationsPage: React.FC<DestinationsPageProps> = ({ onNavigate }
           })}
         </div>
       </div>
+
+      <DestinationComparisonModal
+        isOpen={isComparisonOpen}
+        onClose={() => setIsComparisonOpen(false)}
+        allDestinations={destinations}
+        onNavigate={onNavigate}
+      />
     </div>
   );
 };

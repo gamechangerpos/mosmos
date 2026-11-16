@@ -23,6 +23,7 @@ import { AdminPage } from './pages/AdminPage';
 import { LegalPage } from './pages/LegalPage';
 import { AuthPage } from './pages/AuthPage';
 import { AccountPage } from './pages/AccountPage';
+import { GalleryPage } from './pages/GalleryPage';
 import { AnalyticsService } from './services/analyticsService';
 
 export default function App() {
@@ -116,6 +117,11 @@ export default function App() {
     if (path.startsWith('/travel-packages/')) {
       const slug = path.replace('/travel-packages/', '');
       return <PackageDetailPage slug={slug} onNavigate={navigate} />;
+    }
+
+    // Public Travel Gallery
+    if (path === '/gallery' || path.startsWith('/gallery/')) {
+      return <GalleryPage onNavigate={navigate} />;
     }
 
     // Plan Trip
