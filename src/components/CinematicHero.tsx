@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useRef, useState, useEffect, useLayoutEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 
@@ -8,37 +8,57 @@ interface CinematicHeroProps {
   onHeaderVisibleChange?: (visible: boolean) => void;
 }
 
-// Rotating hero videos exclusively from extracted reference footage
-const HERO_VIDEOS = [
+interface HeroVideoItem {
+  src: string;
+  label: string;
+  subtitle: string;
+  mobilePosition: string;
+  desktopPosition: string;
+}
+
+// Rotating hero videos with tuned focal points for mobile portrait vs desktop
+const HERO_VIDEOS: HeroVideoItem[] = [
   {
     src: '/media/videos/Virgin_Limited_Edition_Showreel_Hero_Video.mp4',
     label: 'African Wilderness',
     subtitle: 'The Great Migration & Savanna',
+    mobilePosition: 'center 35%',
+    desktopPosition: 'center center',
   },
   {
     src: '/media/videos/Mahali_Mzuri_Hero_Video.mp4',
     label: 'Mahali Mzuri',
     subtitle: 'Maasai Mara, Kenya',
+    mobilePosition: 'center 35%',
+    desktopPosition: 'center center',
   },
   {
     src: '/media/videos/Finch_Hattons_Hero_Video.mp4',
     label: 'Finch Hattons',
     subtitle: 'Tsavo, Kenya',
+    mobilePosition: 'center 40%',
+    desktopPosition: 'center center',
   },
   {
     src: '/media/videos/Kasbah_Tamadot_Hero_Video.mp4',
     label: 'Kasbah Tamadot',
     subtitle: 'Atlas Mountains, Morocco',
+    mobilePosition: 'center 30%',
+    desktopPosition: 'center center',
   },
   {
     src: '/media/videos/Ulusaba_Hero_Video.mp4',
     label: 'Ulusaba Reserve',
     subtitle: 'Sabi Sand, South Africa',
+    mobilePosition: 'center 35%',
+    desktopPosition: 'center center',
   },
   {
     src: '/media/videos/Mont_Rochelle_Hero_Video.mp4',
     label: 'Mont Rochelle',
     subtitle: 'Franschhoek, South Africa',
+    mobilePosition: 'center 40%',
+    desktopPosition: 'center center',
   },
 ];
 
@@ -48,9 +68,23 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
   onExploreClick,
   onPlanTripClick,
 }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isRevealed, setIsRevealed] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [prevIndex, setPrevIndex] = useState<number | null>(null);
+  const [isRevealed, setIsRevealed] = useState<boolean>(false);
+  const [isMobile, setIsMobile] = useState<boolean>(false);
+  const sectionRef = useRef<HTMLElement>(null);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+  const isInViewRef = useRef<boolean>(true);
+
+  // Viewport tracking for mobile vs desktop focal crop
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile, { passive: true });
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Initial curtain reveal
   useEffect(() => {
@@ -58,31 +92,132 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
     return () => clearTimeout(timer);
   }, []);
 
-  // Auto-rotate videos
+  // Safe play helper
+  const playActiveVideo = useCallback(() => {
+    const activeVideo = videoRefs.current[currentIndex];
+    if (!activeVideo || !isInViewRef.current) return;
+
+    const prefersReducedMotion =
+      typeof window !== 'undefined' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    if (prefersReducedMotion) {
+      activeVideo.pause();
+      return;
+    }
+
+    activeVideo.muted = true;
+    activeVideo.defaultMuted = true;
+    activeVideo.playsInline = true;
+    const promise = activeVideo.play();
+    if (promise !== undefined) {
+      promise.catch(() => {
+        // Silent swallow — will auto retry on visibility or first interaction
+      });
+    }
+  }, [currentIndex]);
+
+  // Strict DOM property enforcement
+  useLayoutEffect(() => {
+    videoRefs.current.forEach((video) => {
+      if (video) {
+        video.muted = true;
+        video.defaultMuted = true;
+        video.playsInline = true;
+        video.setAttribute('playsinline', '');
+        video.setAttribute('webkit-playsinline', '');
+      }
+    });
+  }, [currentIndex]);
+
+  // Auto-rotate videos with interval
   useEffect(() => {
     const interval = setInterval(() => {
+      setPrevIndex(currentIndex);
       setCurrentIndex((prev) => (prev + 1) % HERO_VIDEOS.length);
     }, ROTATION_INTERVAL);
     return () => clearInterval(interval);
-  }, []);
+  }, [currentIndex]);
 
-  // Play/pause videos on index change
+  // Manage playback on index change
   useEffect(() => {
     videoRefs.current.forEach((video, i) => {
       if (!video) return;
       if (i === currentIndex) {
         video.currentTime = 0;
-        video.play().catch(() => {});
-      } else {
+        playActiveVideo();
+      } else if (i !== prevIndex) {
         video.pause();
       }
     });
-  }, [currentIndex]);
+  }, [currentIndex, prevIndex, playActiveVideo]);
+
+  // IntersectionObserver: Suspend video decoding when scrolled off-screen
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section || typeof IntersectionObserver === 'undefined') return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        isInViewRef.current = entry.isIntersecting;
+        const activeVideo = videoRefs.current[currentIndex];
+        if (!activeVideo) return;
+
+        if (entry.isIntersecting) {
+          playActiveVideo();
+        } else {
+          activeVideo.pause();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, [currentIndex, playActiveVideo]);
+
+  // Page visibility & focus listeners + low-power touch/scroll silent retry
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      const activeVideo = videoRefs.current[currentIndex];
+      if (!activeVideo) return;
+      if (document.hidden) {
+        activeVideo.pause();
+      } else if (isInViewRef.current) {
+        playActiveVideo();
+      }
+    };
+
+    const handleFirstInteraction = () => {
+      if (isInViewRef.current) {
+        playActiveVideo();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleVisibilityChange);
+    window.addEventListener('touchstart', handleFirstInteraction, { passive: true, once: true });
+    window.addEventListener('scroll', handleFirstInteraction, { passive: true, once: true });
+    window.addEventListener('pointerdown', handleFirstInteraction, { passive: true, once: true });
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleVisibilityChange);
+      window.removeEventListener('touchstart', handleFirstInteraction);
+      window.removeEventListener('scroll', handleFirstInteraction);
+      window.removeEventListener('pointerdown', handleFirstInteraction);
+    };
+  }, [currentIndex, playActiveVideo]);
 
   const currentVideo = HERO_VIDEOS[currentIndex];
+  const nextIndex = (currentIndex + 1) % HERO_VIDEOS.length;
 
   return (
-    <section className="relative w-full h-[100svh] min-h-[600px] bg-[#0f0f0f] overflow-hidden select-none">
+    <section
+      ref={sectionRef}
+      className="relative w-full h-[100svh] min-h-[600px] bg-[#0f0f0f] overflow-hidden select-none"
+    >
       {/* Virgin LE Curtain Overlay — slides away to reveal */}
       <div
         className={`absolute inset-0 z-20 bg-[#F7F4ED] transition-transform duration-[1500ms] ${
@@ -91,35 +226,55 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
         style={{ transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)' }}
       />
 
-      {/* Video Stack — crossfade between videos */}
-      {HERO_VIDEOS.map((video, i) => (
-        <video
-          key={video.src}
-          ref={(el) => { videoRefs.current[i] = el; }}
-          src={video.src}
-          autoPlay={i === 0}
-          muted
-          playsInline
-          loop
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-[2000ms] ${
-            i === currentIndex ? 'opacity-100' : 'opacity-0'
-          }`}
-          style={{
-            transform: isRevealed ? 'scale(1)' : 'scale(1.08)',
-            transition: 'transform 1.5s cubic-bezier(0.19, 1, 0.22, 1)',
-          }}
-        />
-      ))}
+      {/* Video Stack — only buffers active, next upcoming, and fading previous video */}
+      {HERO_VIDEOS.map((video, i) => {
+        const isCurrent = i === currentIndex;
+        const isNext = i === nextIndex;
+        const isPrev = i === prevIndex;
+        const shouldHaveSource = isCurrent || isNext || isPrev;
+
+        return (
+          <video
+            key={video.src}
+            ref={(el) => {
+              videoRefs.current[i] = el;
+            }}
+            src={shouldHaveSource ? video.src : undefined}
+            preload={isCurrent ? 'auto' : isNext ? 'metadata' : 'none'}
+            autoPlay={isCurrent}
+            muted
+            playsInline
+            loop
+            controls={false}
+            controlsList="nodownload nofullscreen noremoteplayback"
+            disablePictureInPicture
+            disableRemotePlayback
+            tabIndex={-1}
+            aria-hidden="true"
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-[2000ms] ease-in-out pointer-events-none ${
+              isCurrent ? 'opacity-100' : 'opacity-0'
+            }`}
+            style={{
+              objectPosition: isMobile ? video.mobilePosition : video.desktopPosition,
+              transform: isRevealed ? 'scale(1)' : 'scale(1.08)',
+              transition: 'opacity 2000ms ease-in-out, transform 1.5s cubic-bezier(0.19, 1, 0.22, 1)',
+            }}
+          />
+        );
+      })}
 
       {/* Atmospheric Gradient Overlay */}
-      <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/70 via-black/20 to-black/35 pointer-events-none" />
+      <div className="absolute inset-0 z-10 bg-gradient-to-t from-black/75 via-black/25 to-black/40 pointer-events-none" />
 
       {/* Center Copy — Virgin LE editorial typography */}
       <div
         className={`absolute inset-0 z-10 flex flex-col items-center justify-center text-center px-6 pointer-events-none transition-all duration-[1800ms] ${
           isRevealed ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
         }`}
-        style={{ transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)', transitionDelay: '0.6s' }}
+        style={{
+          transitionTimingFunction: 'cubic-bezier(0.19, 1, 0.22, 1)',
+          transitionDelay: '0.6s',
+        }}
       >
         {/* Overline */}
         <span className="text-[10px] sm:text-[11px] uppercase tracking-[0.4em] text-[#B69A68] font-sans font-semibold mb-4">
@@ -164,18 +319,21 @@ export const CinematicHero: React.FC<CinematicHeroProps> = ({
         </div>
       </div>
 
-      {/* Video Navigation Indicators — Virgin LE dot style */}
+      {/* Video Navigation Slide Indicators — Virgin LE subtle bar style */}
       <div className="absolute bottom-24 sm:bottom-20 left-1/2 -translate-x-1/2 z-10 flex items-center gap-2.5 pointer-events-auto">
         {HERO_VIDEOS.map((_, i) => (
           <button
             key={i}
-            onClick={() => setCurrentIndex(i)}
+            onClick={() => {
+              setPrevIndex(currentIndex);
+              setCurrentIndex(i);
+            }}
             className={`transition-all duration-500 cursor-pointer rounded-full ${
               i === currentIndex
                 ? 'w-8 h-2 bg-[#B69A68]'
                 : 'w-2 h-2 bg-white/40 hover:bg-white/70'
             }`}
-            aria-label={`Video ${i + 1}`}
+            aria-label={`Slide ${i + 1}`}
           />
         ))}
       </div>

@@ -2,6 +2,7 @@ import React, { useRef } from 'react';
 import { DESTINATIONS } from '../data/destinationsData';
 import { SAFARI_TOURS } from '../data/toursData';
 import { ACCOMMODATIONS } from '../data/staysData';
+import { CinematicVideo } from '../components/common/CinematicVideo';
 import { ArrowLeft, ArrowRight, CheckCircle2, Calendar, Sun, DollarSign, FileText, Compass, Sparkles, MapPin } from 'lucide-react';
 import { ScrollReveal, MaskedTextReveal, ParallaxImage, VirginCurtainReveal } from '../components/animations/ScrollReveal';
 
@@ -10,23 +11,27 @@ interface DestinationDetailPageProps {
   onNavigate: (path: string) => void;
 }
 
-// Destination videos mapping from extracted Virgin LE assets
-const DESTINATION_VIDEOS: Record<string, { src: string; caption: string }> = {
+// Destination videos mapping from extracted Virgin LE assets with calibrated focal points
+const DESTINATION_VIDEOS: Record<string, { src: string; caption: string; mobilePosition: string }> = {
   kenya: {
     src: '/media/videos/Mahali_Mzuri_Hero_Video.mp4',
     caption: 'Mahali Mzuri & Finch Hattons · Maasai Mara & Tsavo',
+    mobilePosition: 'center 35%',
   },
   'south-africa': {
     src: '/media/videos/Ulusaba_Hero_Video.mp4',
     caption: 'Ulusaba Private Game Reserve · Sabi Sand & Kruger',
+    mobilePosition: 'center 35%',
   },
   tanzania: {
     src: '/media/videos/Virgin_Limited_Edition_Showreel_Hero_Video.mp4',
     caption: 'Serengeti & Ngorongoro Caldera · The Great Migration',
+    mobilePosition: 'center 35%',
   },
   egypt: {
     src: '/media/videos/Kasbah_Tamadot_Hero_Video.mp4',
     caption: 'North African Heritage · Pyramids & Ancient Nile',
+    mobilePosition: 'center 30%',
   },
 };
 
@@ -56,13 +61,12 @@ export const DestinationDetailPage: React.FC<DestinationDetailPageProps> = ({ sl
       {/* 1. Cinematic Video Hero Header (Virgin LE pattern) */}
       <div className="relative h-[80vh] min-h-[560px] bg-[#0f0f0f] overflow-hidden">
         {videoData ? (
-          <video
+          <CinematicVideo
             src={videoData.src}
-            autoPlay
-            muted
-            playsInline
-            loop
-            className="w-full h-full object-cover"
+            mobileObjectPosition={videoData.mobilePosition}
+            desktopObjectPosition="center center"
+            priority={true}
+            containerClassName="w-full h-full"
           />
         ) : (
           <img
@@ -71,7 +75,7 @@ export const DestinationDetailPage: React.FC<DestinationDetailPageProps> = ({ sl
             className="w-full h-full object-cover"
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/40 pointer-events-none" />
 
         {/* Back navigation & floating header */}
         <div className="absolute top-24 left-0 right-0 z-20 max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12">

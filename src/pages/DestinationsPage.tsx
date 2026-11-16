@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { DESTINATIONS } from '../data/destinationsData';
 import { ArrowRight } from 'lucide-react';
+import { CinematicVideo } from '../components/common/CinematicVideo';
 import { SearchFilterBar } from '../components/SearchFilterBar';
 import { ScrollReveal, MaskedTextReveal, ParallaxImage, VirginCurtainReveal } from '../components/animations/ScrollReveal';
 
@@ -56,15 +57,15 @@ export const DestinationsPage: React.FC<DestinationsPageProps> = ({ onNavigate }
       {/* Hero Header — Virgin LE Dark Editorial Hero */}
       <div className="relative bg-[#0f0f0f] text-[#F7F4ED] py-24 sm:py-32 px-4 sm:px-8 lg:px-12 overflow-hidden">
         {/* Subtle background ambient video */}
-        <video
+        <CinematicVideo
           src="/media/videos/Virgin_Limited_Edition_Showreel_Hero_Video.mp4"
-          autoPlay
-          muted
-          playsInline
-          loop
-          className="absolute inset-0 w-full h-full object-cover opacity-25"
+          mobileObjectPosition="center 35%"
+          desktopObjectPosition="center center"
+          priority={true}
+          opacityClassName="opacity-25"
+          containerClassName="absolute inset-0 w-full h-full"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-[#0f0f0f]/60 to-[#0f0f0f]/80" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-[#0f0f0f]/60 to-[#0f0f0f]/80 pointer-events-none" />
 
         <div className="relative z-10 max-w-[1440px] mx-auto text-center">
           <ScrollReveal direction="down" delay={0.1}>

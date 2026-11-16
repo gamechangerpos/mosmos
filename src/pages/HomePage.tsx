@@ -1,12 +1,13 @@
 import React, { useRef } from 'react';
 import { CinematicHero } from '../components/CinematicHero';
+import { CinematicVideo } from '../components/common/CinematicVideo';
 import { WildlifeCinematicSequence } from '../components/home/WildlifeCinematicSequence';
 import { ScrollReveal, MaskedTextReveal, ParallaxImage, VirginCurtainReveal } from '../components/animations/ScrollReveal';
 import { DESTINATIONS } from '../data/destinationsData';
 import { SAFARI_TOURS } from '../data/toursData';
 import { ACCOMMODATIONS } from '../data/staysData';
 import { TRAVEL_PACKAGES } from '../data/packagesData';
-import { ArrowRight, Compass, ShieldCheck, HeartHandshake, Eye, CheckCircle2, Play } from 'lucide-react';
+import { ArrowRight, Compass, ShieldCheck, HeartHandshake, Eye, CheckCircle2 } from 'lucide-react';
 
 interface HomePageProps {
   onNavigate: (path: string) => void;
@@ -259,17 +260,16 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onHeaderVisibleC
           4. VIDEO INTERSTITIAL — Full-width cinematic break
           (Virgin LE pattern: full-bleed video between sections)
           ═══════════════════════════════════════════════ */}
-      <section className="relative h-[50vh] sm:h-[60vh] lg:h-[70vh] overflow-hidden">
-        <video
+      <section className="relative h-[50vh] sm:h-[60vh] lg:h-[70vh] overflow-hidden bg-[#0f0f0f]">
+        <CinematicVideo
           src="/media/videos/Virgin_Limited_Edition_Showreel_Hero_Video.mp4"
-          autoPlay
-          muted
-          playsInline
-          loop
-          className="absolute inset-0 w-full h-full object-cover"
+          mobileObjectPosition="center 35%"
+          desktopObjectPosition="center center"
+          priority={false}
+          containerClassName="absolute inset-0 w-full h-full"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/40" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-10">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-black/40 pointer-events-none" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-6 z-10 pointer-events-none">
           <ScrollReveal direction="up" delay={0.2}>
             <span className="text-[10px] uppercase tracking-[0.4em] text-[#B69A68] font-semibold block mb-4">
               Cinematic Journeys
@@ -279,10 +279,10 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onHeaderVisibleC
             </h2>
             <button
               onClick={() => onNavigate('/safari-tours')}
-              className="px-8 py-3.5 border border-white/40 text-white text-[11px] uppercase tracking-[0.2em] font-semibold hover:bg-white hover:text-[#20221F] transition-all duration-300 cursor-pointer inline-flex items-center gap-2"
+              className="pointer-events-auto px-8 py-3.5 border border-white/40 text-white text-[11px] uppercase tracking-[0.2em] font-semibold hover:bg-white hover:text-[#20221F] transition-all duration-300 cursor-pointer inline-flex items-center gap-2"
             >
-              <Play className="w-3.5 h-3.5" />
               <span>Explore Our Safaris</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </button>
           </ScrollReveal>
         </div>
@@ -626,17 +626,16 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onHeaderVisibleC
       {/* ═══════════════════════════════════════════════
           10. FINAL CTA — Virgin LE editorial close
           ═══════════════════════════════════════════════ */}
-      <section className="relative py-32 sm:py-40 overflow-hidden">
+      <section className="relative py-32 sm:py-40 overflow-hidden bg-[#0f0f0f]">
         {/* Background video */}
-        <video
+        <CinematicVideo
           src="/media/videos/Mahali_Mzuri_Hero_Video.mp4"
-          autoPlay
-          muted
-          playsInline
-          loop
-          className="absolute inset-0 w-full h-full object-cover"
+          mobileObjectPosition="center 40%"
+          desktopObjectPosition="center center"
+          priority={false}
+          containerClassName="absolute inset-0 w-full h-full"
         />
-        <div className="absolute inset-0 bg-black/60" />
+        <div className="absolute inset-0 bg-black/60 pointer-events-none" />
 
         <div className="relative z-10 max-w-2xl mx-auto px-4 sm:px-6 text-center">
           <ScrollReveal direction="down" delay={0.1}>

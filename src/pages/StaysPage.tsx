@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ACCOMMODATIONS } from '../data/staysData';
+import { CinematicVideo } from '../components/common/CinematicVideo';
 import { ArrowRight, MapPin } from 'lucide-react';
 import { ScrollReveal, MaskedTextReveal, ParallaxImage, VirginCurtainReveal } from '../components/animations/ScrollReveal';
 
@@ -31,15 +32,15 @@ export const StaysPage: React.FC<StaysPageProps> = ({ onNavigate }) => {
     <div className="pt-24 pb-24 bg-[#F7F4ED] overflow-x-hidden">
       {/* Editorial Dark Header */}
       <div className="relative bg-[#0f0f0f] text-[#F7F4ED] py-24 sm:py-32 px-4 sm:px-8 lg:px-12 overflow-hidden">
-        <video
+        <CinematicVideo
           src="/media/videos/Mont_Rochelle_Hero_Video.mp4"
-          autoPlay
-          muted
-          playsInline
-          loop
-          className="absolute inset-0 w-full h-full object-cover opacity-20"
+          mobileObjectPosition="center 35%"
+          desktopObjectPosition="center center"
+          priority={true}
+          opacityClassName="opacity-20"
+          containerClassName="absolute inset-0 w-full h-full"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-[#0f0f0f]/60 to-[#0f0f0f]/80" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0f0f0f] via-[#0f0f0f]/60 to-[#0f0f0f]/80 pointer-events-none" />
 
         <div className="relative z-10 max-w-[1440px] mx-auto text-center">
           <ScrollReveal direction="down" delay={0.1}>
