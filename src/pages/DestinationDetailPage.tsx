@@ -141,11 +141,17 @@ export const DestinationDetailPage: React.FC<DestinationDetailPageProps> = ({ sl
                 Plan a Custom Journey
               </button>
               <button
+                onClick={() => onNavigate('/transportation')}
+                className="px-6 py-3 border border-white/30 text-white hover:bg-white hover:text-[#0f0f0f] text-[11px] font-semibold uppercase tracking-[0.2em] transition-all cursor-pointer backdrop-blur-sm"
+              >
+                Regional Transit & Transfers
+              </button>
+              <button
                 onClick={() => {
                   const el = document.getElementById('overview');
                   el?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="px-6 py-3 border border-white/30 text-white hover:bg-white hover:text-[#0f0f0f] text-[11px] font-semibold uppercase tracking-[0.2em] transition-all cursor-pointer"
+                className="px-5 py-3 text-white/80 hover:text-white text-[11px] font-semibold uppercase tracking-[0.2em] transition-all cursor-pointer"
               >
                 Explore Guide
               </button>

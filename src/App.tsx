@@ -24,6 +24,7 @@ import { LegalPage } from './pages/LegalPage';
 import { AuthPage } from './pages/AuthPage';
 import { AccountPage } from './pages/AccountPage';
 import { GalleryPage } from './pages/GalleryPage';
+import { TransportationPage } from './pages/TransportationPage';
 import { AnalyticsService } from './services/analyticsService';
 
 export default function App() {
@@ -103,6 +104,11 @@ export default function App() {
     if (path.startsWith('/stays/')) {
       const slug = path.replace('/stays/', '');
       return <StayDetailPage slug={slug} onNavigate={navigate} />;
+    }
+
+    // Regional Transportation & Travel Arrangements
+    if (path === '/transportation' || path === '/transport' || path.startsWith('/transportation/')) {
+      return <TransportationPage onNavigate={navigate} />;
     }
 
     // Flights

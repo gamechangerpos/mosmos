@@ -751,7 +751,15 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onHeaderVisibleC
                 onClick={() => onNavigate('/destinations')}
                 className="w-full sm:w-auto px-8 py-3.5 bg-[#B69A68] hover:bg-[#a68a58] text-[#20221F] font-semibold text-[11px] tracking-[0.2em] uppercase transition-colors cursor-pointer"
               >
-                Explore Gallery
+                Explore Destinations
+              </button>
+            </ScrollReveal>
+            <ScrollReveal direction="up" delay={0.4}>
+              <button
+                onClick={() => onNavigate('/transportation')}
+                className="w-full sm:w-auto px-7 py-3.5 bg-white/10 hover:bg-white/20 text-white font-semibold text-[11px] tracking-[0.2em] uppercase transition-colors cursor-pointer border border-white/20"
+              >
+                Regional Transportation
               </button>
             </ScrollReveal>
             <ScrollReveal direction="right" delay={0.4}>
@@ -759,7 +767,7 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onHeaderVisibleC
                 onClick={() => onNavigate('/plan-trip')}
                 className="w-full sm:w-auto px-8 py-3.5 border border-white/40 text-white hover:bg-white hover:text-[#20221F] font-semibold text-[11px] tracking-[0.2em] uppercase transition-all duration-300 cursor-pointer"
               >
-                Send Inquiry
+                Custom Itinerary
               </button>
             </ScrollReveal>
           </div>

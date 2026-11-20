@@ -476,3 +476,125 @@ export interface MarketingCampaign {
   createdAt: string;
 }
 
+// ============================================================================
+// REGIONAL TRANSPORTATION & CUSTOM TRIP PLANNING TYPES
+// ============================================================================
+
+export type TransportMode = 
+  | 'bus' 
+  | 'train' 
+  | 'private_car' 
+  | 'private_driver' 
+  | 'rental_car' 
+  | 'tourist_van' 
+  | 'safari_cruiser' 
+  | 'domestic_flight' 
+  | 'ferry_boat' 
+  | 'airport_transfer' 
+  | 'no_preference';
+
+export type TransportInquiryStatus =
+  | 'New'
+  | 'Under Review'
+  | 'Preparing Quotation'
+  | 'Quotation Sent'
+  | 'Awaiting Customer Response'
+  | 'Confirmed'
+  | 'Completed'
+  | 'Cancelled';
+
+export interface TransportOperator {
+  id: string;
+  name: string;
+  transportType: 'bus' | 'train' | 'ferry' | 'flight' | 'private-transfer';
+  countries: string[];
+  logoUrl?: string;
+  websiteUrl?: string;
+  bookingUrl?: string;
+  description: string;
+  verified: boolean;
+  lastChecked: string;
+  sourceReference?: string;
+  published: boolean;
+}
+
+export interface TransportRoute {
+  id: string;
+  origin: string;
+  destination: string;
+  originCountry: string;
+  destinationCountry: string;
+  routeType: 'cross-border' | 'domestic' | 'safari-transfer' | 'rail' | 'ferry' | 'flight';
+  operatorId?: string;
+  operatorName: string;
+  transportType: string;
+  typicalDuration: string;
+  description: string;
+  verified: boolean;
+  lastChecked: string;
+  crossBorderRequirements?: string[];
+  recommendedFor?: string[];
+  published: boolean;
+}
+
+export interface TransportInquiry {
+  id: string;
+  reference: string;
+  createdAt: string;
+  inquiryType: 'transport_only' | 'custom_trip' | 'hotel_arrangement';
+  // Journey Details
+  departureCountry: string;
+  departureCity: string;
+  destinationCountry: string;
+  destinationCity: string;
+  departureDate: string;
+  returnDate?: string;
+  isReturnJourney: boolean;
+  flexibleDates: boolean;
+  travelersCount: number;
+  adultsCount: number;
+  childrenCount: number;
+  luggageNotes?: string;
+  additionalDetails?: string;
+  // Preferred Transportation
+  preferredTransportModes: string[];
+  preferredOperator?: string;
+  // Travel Preferences
+  travelPreferences: string[]; // 'budget-friendly', 'comfortable', 'private', 'luxury', 'family-friendly', 'group', 'adventure'
+  // Confidential Private Budget
+  privateBudget: {
+    estimatedAmount: string;
+    currency: string;
+    budgetType: 'per_person' | 'group_total';
+    includesAccommodation: boolean;
+    includesTransport: boolean;
+    includesMeals: boolean;
+    includesActivities: boolean;
+    notes?: string;
+  };
+  // Accommodation Arrangements (Optional)
+  accommodationRequired: boolean;
+  hotelCategory?: 'budget' | 'comfortable-midrange' | 'luxury-hotel' | 'safari-lodge' | 'beach-resort' | 'family-apartment' | 'recommend-for-me';
+  roomCount?: number;
+  // Custom Trip Planning (Optional)
+  activitiesAndInterests?: string[]; // 'beach_holiday', 'wildlife_safari', 'culture', 'city_tour', 'adventure'
+  // Contact Details
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  countryOfResidence?: string;
+  preferredContactMethod: 'email' | 'phone' | 'whatsapp';
+  notes?: string;
+  // Status & Admin
+  status: TransportInquiryStatus;
+  assignedConsultant?: string;
+  privateAdminNotes?: string[];
+  privateQuotationDetails?: {
+    preparedBy?: string;
+    proposedOptions?: string;
+    quotedAmount?: number;
+    quotedCurrency?: string;
+    sentAt?: string;
+  };
+}
+

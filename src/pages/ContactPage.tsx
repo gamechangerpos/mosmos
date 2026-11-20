@@ -148,35 +148,82 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onNavigate }) => {
               </h3>
 
               <div className="space-y-6 text-xs text-[#20221F]/80">
+                {/* Uganda Office */}
                 <div className="flex items-start gap-3">
                   <MapPin className="w-4 h-4 text-[#78634B] shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-semibold text-[#20221F] block mb-0.5">Headquarters & Flight Base</span>
+                    <span className="font-semibold text-[#20221F] block mb-0.5">Uganda Office & Expeditions Base</span>
                     <p className="font-light leading-relaxed">
-                      Plot 14 Victoria Road, Entebbe<br />
-                      P.O. Box 7218, Kampala, Uganda · East Africa
+                      Gaba Road, next to Kampala International University<br />
+                      Kampala, Uganda · East Africa
                     </p>
                   </div>
                 </div>
 
+                {/* Kenya Office */}
+                <div className="flex items-start gap-3">
+                  <MapPin className="w-4 h-4 text-[#78634B] shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-semibold text-[#20221F] block mb-0.5">Kenya Regional Office</span>
+                    <p className="font-light leading-relaxed">
+                      Mamboleo, Kisumu, Kenya<br />
+                      East African Transit & Safari Desk
+                    </p>
+                  </div>
+                </div>
+
+                {/* Email Dispatch */}
                 <div className="flex items-start gap-3">
                   <Mail className="w-4 h-4 text-[#78634B] shrink-0 mt-0.5" />
                   <div>
                     <span className="font-semibold text-[#20221F] block mb-0.5">Official Inquiries & Dispatch</span>
-                    <p className="font-light">inquiries@mosmossafaris.com</p>
-                    <p className="font-light text-[#20221F]/60">reservations@mosmossafaris.com</p>
+                    <a href="mailto:inquiries@mosmossafaris.com" className="font-light block hover:text-[#78634B] transition-colors">
+                      inquiries@mosmossafaris.com
+                    </a>
+                    <a href="mailto:reservations@mosmossafaris.com" className="font-light text-[#20221F]/60 block hover:text-[#78634B] transition-colors">
+                      reservations@mosmossafaris.com
+                    </a>
                   </div>
                 </div>
 
+                {/* Telephone & WhatsApp Direct */}
                 <div className="flex items-start gap-3">
                   <Phone className="w-4 h-4 text-[#78634B] shrink-0 mt-0.5" />
                   <div>
                     <span className="font-semibold text-[#20221F] block mb-0.5">Telephone & WhatsApp Direct</span>
-                    <p className="font-light">+256 414 320 000 (East Africa Operations)</p>
-                    <p className="font-light text-[#20221F]/60">+256 772 100 000 (24/7 Field Emergency Desk)</p>
+                    <div className="space-y-1.5 font-light">
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-[#78634B]">Uganda:</span>
+                        <a href="tel:+256782844193" className="hover:text-[#78634B] transition-colors underline decoration-[#78634B]/30">
+                          +256 782 844 193
+                        </a>
+                        <a href="https://wa.me/256782844193" target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 hover:bg-emerald-100">
+                          WhatsApp
+                        </a>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-[#78634B]">Kenya:</span>
+                        <a href="tel:+254798277447" className="hover:text-[#78634B] transition-colors underline decoration-[#78634B]/30">
+                          +254 798 277 447
+                        </a>
+                        <a href="https://wa.me/254798277447" target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 hover:bg-emerald-100">
+                          WhatsApp
+                        </a>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-[#78634B]">Direct:</span>
+                        <a href="tel:+256792397899" className="hover:text-[#78634B] transition-colors underline decoration-[#78634B]/30">
+                          +256 792 397 899
+                        </a>
+                        <a href="https://wa.me/256792397899" target="_blank" rel="noopener noreferrer" className="text-[10px] uppercase font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 hover:bg-emerald-100">
+                          WhatsApp
+                        </a>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
+                {/* Hours */}
                 <div className="flex items-start gap-3">
                   <Clock className="w-4 h-4 text-[#78634B] shrink-0 mt-0.5" />
                   <div>

@@ -9,6 +9,7 @@ import { CmsGalleryManager } from '../components/admin/CmsGalleryManager';
 import { AdminSupportChatManager } from '../components/admin/AdminSupportChatManager';
 import { AdminReviewModerator } from '../components/admin/AdminReviewModerator';
 import { AdminMarketingManager } from '../components/admin/AdminMarketingManager';
+import { CmsTransportManager } from '../components/admin/CmsTransportManager';
 import { PortalService, JOURNEY_STAGES } from '../services/portalService';
 import { TripInquiry, InquiryStatus, JourneyStage, BusinessSettings, NotificationLog } from '../types';
 import { useAuth } from '../context/AuthContext';
@@ -40,7 +41,8 @@ import {
   Tablet, 
   Settings,
   Layers,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Bus
 } from 'lucide-react';
 
 interface AdminPageProps {
@@ -57,7 +59,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
   // Primary 4 Operational Pillars
   const [activePillar, setActivePillar] = useState<'operations' | 'cms' | 'marketing' | 'system'>('operations');
   const [activeOpsSubTab, setActiveOpsSubTab] = useState<'inquiries' | 'messages'>('inquiries');
-  const [activeCmsSubTab, setActiveCmsSubTab] = useState<'packages' | 'destinations' | 'gallery' | 'reviews'>('packages');
+  const [activeCmsSubTab, setActiveCmsSubTab] = useState<'packages' | 'destinations' | 'gallery' | 'reviews' | 'transport'>('packages');
   const [activeSystemSubTab, setActiveSystemSubTab] = useState<'email' | 'analytics' | 'rules'>('email');
 
   // Inquiries State
@@ -900,6 +902,18 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
                 <ShieldCheck className="w-4 h-4" />
                 <span>Patron Reviews Moderation</span>
               </button>
+
+              <button
+                onClick={() => setActiveCmsSubTab('transport')}
+                className={`px-4 py-2 text-xs uppercase font-semibold tracking-wider transition-colors cursor-pointer flex items-center gap-2 ${
+                  activeCmsSubTab === 'transport'
+                    ? 'bg-[#B69A68] text-[#20221F]'
+                    : 'text-white/80 hover:text-white hover:bg-white/10'
+                }`}
+              >
+                <Bus className="w-4 h-4" />
+                <span>Regional Transport & Routes</span>
+              </button>
             </div>
 
             {/* Sub-tab views */}
@@ -907,6 +921,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({ onNavigate }) => {
             {activeCmsSubTab === 'destinations' && <CmsDestinationManager />}
             {activeCmsSubTab === 'gallery' && <CmsGalleryManager />}
             {activeCmsSubTab === 'reviews' && <AdminReviewModerator />}
+            {activeCmsSubTab === 'transport' && <CmsTransportManager />}
           </div>
         )}
 

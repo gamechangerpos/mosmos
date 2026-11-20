@@ -366,18 +366,22 @@ export const PlanTripPage: React.FC<PlanTripPageProps> = ({ onNavigate, initialD
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
-                  <label className="text-xs uppercase tracking-wider text-[#20221F]/80 font-semibold block mb-1.5">
-                    Target Budget Range (per person sharing)
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs uppercase tracking-wider text-[#20221F]/80 font-semibold block">
+                      Target Budget Range
+                    </label>
+                    <span className="text-[10px] text-[#78634B] font-medium">Confidential</span>
+                  </div>
                   <select
                     value={formData.budgetRange}
                     onChange={(e) => setFormData({ ...formData, budgetRange: e.target.value })}
                     className="w-full bg-[#F7F4ED] border border-[#D9D0C2] text-xs text-[#20221F] px-4 py-3 focus:outline-none focus:border-[#78634B]"
                   >
-                    <option value="$3,000 – $4,500 per person">$3,000 – $4,500 per person</option>
-                    <option value="$4,500 – $7,000 per person">$4,500 – $7,000 per person (Recommended luxury)</option>
-                    <option value="$7,000 – $12,000+ per person">$7,000 – $12,000+ per person (Ultra-luxury lodges & private flights)</option>
-                    <option value="Flexible / Request recommendations">Flexible / Tailor best value</option>
+                    <option value="Private Budget / Discuss with Team">Private Budget / Discuss with Team</option>
+                    <option value="Comfortable Mid-Range ($2,500 – $4,000 per person)">Comfortable Mid-Range ($2,500 – $4,000 per person)</option>
+                    <option value="Classic Luxury ($4,000 – $6,500 per person)">Classic Luxury ($4,000 – $6,500 per person)</option>
+                    <option value="Ultra-Luxury & Private Flights ($7,000+ per person)">Ultra-Luxury & Private Flights ($7,000+ per person)</option>
+                    <option value="Custom Budget to be Quoted">Custom Budget to be Quoted</option>
                   </select>
                 </div>
 

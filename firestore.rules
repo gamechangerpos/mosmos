@@ -128,6 +128,27 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // 10B. CMS Transport Operators & Regional Routes
+    match /cms_transport_operators/{operatorId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /cms_transport_routes/{routeId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /transport_inquiries/{inquiryId} {
+      allow create: if request.resource.data.customerEmail is string;
+      allow read: if isAdmin() || (
+        isAuthenticated() && (
+          resource.data.customerEmail == request.auth.token.email
+        )
+      );
+      allow update, delete: if isAdmin();
+    }
+
     // 11. Legacy Public Content
     match /destinations/{docId} {
       allow read: if true;

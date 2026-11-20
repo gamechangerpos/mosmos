@@ -137,6 +137,11 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                 </button>
               </li>
               <li>
+                <button onClick={() => onNavigate('/transportation')} className="text-[#D9D0C2]/70 hover:text-[#B69A68] transition-colors">
+                  Transportation & Travel
+                </button>
+              </li>
+              <li>
                 <button onClick={() => onNavigate('/gallery')} className="text-[#D9D0C2]/70 hover:text-[#B69A68] transition-colors">
                   Photo Gallery & Stories
                 </button>
@@ -207,13 +212,37 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               </form>
             )}
 
-            <div className="mt-6 pt-5 border-t border-white/8 text-xs space-y-2 text-[#D9D0C2]/60 font-light">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-3.5 h-3.5 text-[#B69A68]" />
-                <span>Kampala & Entebbe, Uganda</span>
+            <div className="mt-6 pt-5 border-t border-white/8 text-xs space-y-2.5 text-[#D9D0C2]/70 font-light">
+              <div className="flex items-start gap-2">
+                <MapPin className="w-3.5 h-3.5 text-[#B69A68] shrink-0 mt-0.5" />
+                <div>
+                  <span className="text-[11px] font-medium text-white block">Uganda Office:</span>
+                  <span>Gaba Road, next to Kampala International University, Kampala, Uganda</span>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Mail className="w-3.5 h-3.5 text-[#B69A68]" />
+              <div className="flex items-start gap-2">
+                <MapPin className="w-3.5 h-3.5 text-[#B69A68] shrink-0 mt-0.5" />
+                <div>
+                  <span className="text-[11px] font-medium text-white block">Kenya Office:</span>
+                  <span>Mamboleo, Kisumu, Kenya</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 pt-1 flex-wrap text-[11px]">
+                <Phone className="w-3.5 h-3.5 text-[#B69A68] shrink-0" />
+                <a href="tel:+256782844193" className="hover:text-[#B69A68] transition-colors">
+                  UG: +256 782 844 193
+                </a>
+                <span className="text-white/20">|</span>
+                <a href="tel:+254798277447" className="hover:text-[#B69A68] transition-colors">
+                  KE: +254 798 277 447
+                </a>
+                <span className="text-white/20">|</span>
+                <a href="https://wa.me/256792397899" target="_blank" rel="noopener noreferrer" className="hover:text-[#B69A68] transition-colors underline decoration-[#B69A68]/40">
+                  WhatsApp: +256 792 397 899
+                </a>
+              </div>
+              <div className="flex items-center gap-2 pt-0.5">
+                <Mail className="w-3.5 h-3.5 text-[#B69A68] shrink-0" />
                 <span>inquiries@mosmossafaris.com</span>
               </div>
             </div>
