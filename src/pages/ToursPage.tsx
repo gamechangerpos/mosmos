@@ -114,7 +114,9 @@ export const ToursPage: React.FC<ToursPageProps> = ({ onNavigate }) => {
                           title: tour.title,
                           heroImage: tour.heroImage,
                           location: tour.destination,
-                          priceNote: `$${tour.indicativePrice?.toLocaleString()} / guest`
+                          priceNote: (tour as any).isPricePublished && (tour as any).publishedPrice
+                            ? `$${(tour as any).publishedPrice?.toLocaleString()} / guest`
+                            : undefined
                         }}
                         variant="icon"
                       />
@@ -148,13 +150,17 @@ export const ToursPage: React.FC<ToursPageProps> = ({ onNavigate }) => {
                     </div>
 
                     <div className="pt-4 border-t border-[#D9D0C2] flex items-center justify-between text-xs">
-                      <div>
-                        <span className="text-[10px] uppercase tracking-wider text-[#20221F]/50 block">From</span>
-                        <span className="font-serif text-lg font-semibold text-[#20221F]">
-                          ${tour.indicativePrice?.toLocaleString()}{' '}
-                          <span className="text-xs font-normal text-[#20221F]/50">/ guest</span>
-                        </span>
-                      </div>
+                      {(tour as any).isPricePublished && (tour as any).publishedPrice ? (
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wider text-[#20221F]/50 block">From</span>
+                          <span className="font-serif text-lg font-semibold text-[#20221F]">
+                            ${(tour as any).publishedPrice?.toLocaleString()}{' '}
+                            <span className="text-xs font-normal text-[#20221F]/50">/ guest</span>
+                          </span>
+                        </div>
+                      ) : (
+                        <span />
+                      )}
                       <span className="px-4 py-2 bg-[#0f0f0f] text-white text-[11px] uppercase tracking-[0.15em] font-semibold hover:bg-[#78634B] transition-colors">
                         Explore
                       </span>

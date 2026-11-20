@@ -366,15 +366,21 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onHeaderVisibleC
                     </div>
 
                     <div className="pt-4 border-t border-[#D9D0C2] flex items-center justify-between text-xs">
-                      <div>
-                        <span className="text-[10px] uppercase tracking-wider text-[#20221F]/50 block">
-                          From
+                      {(tour as any).isPricePublished && (tour as any).publishedPrice ? (
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wider text-[#20221F]/50 block">
+                            From
+                          </span>
+                          <span className="font-serif text-lg text-[#20221F] font-semibold">
+                            ${(tour as any).publishedPrice?.toLocaleString()}{' '}
+                            <span className="text-xs font-normal text-[#20221F]/60">/ person</span>
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-[#78634B] font-medium text-[11px]">
+                          {tour.destination}
                         </span>
-                        <span className="font-serif text-lg text-[#20221F] font-semibold">
-                          ${tour.indicativePrice?.toLocaleString()}{' '}
-                          <span className="text-xs font-normal text-[#20221F]/60">/ person</span>
-                        </span>
-                      </div>
+                      )}
                       <span className="px-4 py-2 bg-[#20221F] text-[#F7F4ED] font-semibold uppercase tracking-wider text-[11px] group-hover:bg-[#78634B] transition-colors">
                         View Tour
                       </span>
@@ -451,9 +457,15 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onHeaderVisibleC
                       </p>
                     </div>
                     <div className="pt-3 border-t border-[#D9D0C2]/50 flex items-center justify-between text-xs">
-                      <span className="text-[#78634B] font-medium">
-                        ${stay.indicativePricePerNight} <span className="text-[10px] text-[#20221F]/50">/ night</span>
-                      </span>
+                      {(stay as any).isPricePublished && (stay as any).publishedPrice ? (
+                        <span className="text-[#78634B] font-medium">
+                          ${(stay as any).publishedPrice} <span className="text-[10px] text-[#20221F]/50">/ night</span>
+                        </span>
+                      ) : (
+                        <span className="text-[#78634B] font-medium text-[11px]">
+                          {stay.destination}
+                        </span>
+                      )}
                       <span className="text-[11px] font-semibold text-[#20221F] uppercase tracking-wider flex items-center gap-1 group-hover:translate-x-1 transition-transform">
                         <span>Reserve</span>
                         <ArrowRight className="w-3 h-3" />
@@ -530,14 +542,20 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate, onHeaderVisibleC
                       </p>
                     </div>
                     <div className="pt-4 border-t border-[#D9D0C2] flex items-center justify-between">
-                      <div>
-                        <span className="text-[10px] uppercase tracking-wider text-[#20221F]/50 block">
-                          From
+                      {(pkg as any).isPricePublished && (pkg as any).publishedPrice ? (
+                        <div>
+                          <span className="text-[10px] uppercase tracking-wider text-[#20221F]/50 block">
+                            From
+                          </span>
+                          <span className="font-serif text-lg font-semibold text-[#20221F]">
+                            ${(pkg as any).publishedPrice?.toLocaleString()} <span className="text-xs font-normal text-[#20221F]/50">/ guest</span>
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-[11px] text-[#78634B] font-medium">
+                          {pkg.duration}
                         </span>
-                        <span className="font-serif text-lg font-semibold text-[#20221F]">
-                          ${pkg.indicativePrice?.toLocaleString()} <span className="text-xs font-normal text-[#20221F]/50">/ guest</span>
-                        </span>
-                      </div>
+                      )}
                       <span className="text-xs uppercase tracking-wider font-semibold text-[#78634B] group-hover:text-[#20221F] flex items-center gap-1 transition-colors">
                         <span>View</span>
                         <ArrowRight className="w-3.5 h-3.5" />

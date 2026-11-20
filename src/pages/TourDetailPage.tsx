@@ -40,7 +40,9 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({ slug, onNavigate
         preferredDate: formData.date || 'Flexible 2027',
         travelersCount: Number(formData.travelers),
         specialRequests: formData.specialRequests,
-        totalEstimatedPrice: tour.indicativePrice ? tour.indicativePrice * Number(formData.travelers) : undefined
+        totalEstimatedPrice: (tour as any).isPricePublished && (tour as any).publishedPrice
+          ? (tour as any).publishedPrice * Number(formData.travelers)
+          : undefined
       });
 
       // Also create general trip inquiry so it is visible in admin tracking
@@ -54,7 +56,9 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({ slug, onNavigate
         durationDays: tour.durationDays,
         adultsCount: Number(formData.travelers),
         childrenCount: 0,
-        budgetRange: tour.indicativePrice ? `$${tour.indicativePrice * Number(formData.travelers)}` : 'Standard Quote',
+        budgetRange: (tour as any).isPricePublished && (tour as any).publishedPrice
+          ? `$${(tour as any).publishedPrice * Number(formData.travelers)}`
+          : 'Tailored Quote requested',
         travelStyle: 'Curated Safari Tour',
         preferredExperiences: tour.highlights.slice(0, 3),
         accommodationType: 'Premier Safari Lodges',
@@ -94,7 +98,9 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({ slug, onNavigate
                 title: tour.title,
                 heroImage: tour.heroImage,
                 location: tour.destination,
-                priceNote: `$${tour.indicativePrice?.toLocaleString()} / person`
+                priceNote: (tour as any).isPricePublished && (tour as any).publishedPrice
+                  ? `$${(tour as any).publishedPrice?.toLocaleString()} / person`
+                  : undefined
               }}
               variant="button"
             />
@@ -116,7 +122,7 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({ slug, onNavigate
 
       {/* 2. Key Expedition Metrics Bar */}
       <div className="bg-[#20221F] text-[#F7F4ED] border-b border-[#343C32] py-4 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-6 text-xs">
+        <div className={`max-w-7xl mx-auto grid grid-cols-2 ${(tour as any).isPricePublished && (tour as any).publishedPrice ? 'sm:grid-cols-4' : 'sm:grid-cols-3'} gap-6 text-xs`}>
           <div className="flex items-center gap-2.5">
             <Clock className="w-4 h-4 text-[#B69A68]" />
             <div>
@@ -141,13 +147,15 @@ export const TourDetailPage: React.FC<TourDetailPageProps> = ({ slug, onNavigate
             </div>
           </div>
 
-          <div className="flex items-center gap-2.5">
-            <Compass className="w-4 h-4 text-[#B69A68]" />
-            <div>
-              <span className="text-[10px] text-[#D9D0C2]/60 uppercase tracking-wider block">Indicative Rate</span>
-              <span className="font-medium text-[#F7F4ED]">${tour.indicativePrice?.toLocaleString()} / person</span>
+          {(tour as any).isPricePublished && (tour as any).publishedPrice && (
+            <div className="flex items-center gap-2.5">
+              <Compass className="w-4 h-4 text-[#B69A68]" />
+              <div>
+                <span className="text-[10px] text-[#D9D0C2]/60 uppercase tracking-wider block">Rate</span>
+                <span className="font-medium text-[#F7F4ED]">${(tour as any).publishedPrice?.toLocaleString()} / person</span>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 

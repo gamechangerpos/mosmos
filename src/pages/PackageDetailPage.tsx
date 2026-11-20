@@ -41,12 +41,16 @@ export const PackageDetailPage: React.FC<PackageDetailPageProps> = ({ slug, onNa
         durationDays: 10,
         adultsCount: Number(formData.travelers),
         childrenCount: 0,
-        budgetRange: pkg.indicativePrice ? `$${pkg.indicativePrice * Number(formData.travelers)}` : 'Standard Package Quote',
+        budgetRange: (pkg as any).isPricePublished && (pkg as any).publishedPrice
+          ? `$${(pkg as any).publishedPrice * Number(formData.travelers)}`
+          : 'Tailored Package Quote',
         travelStyle: `Package: ${pkg.title}`,
         preferredExperiences: pkg.highlights.slice(0, 3),
         accommodationType: 'Boutique Lodges & Hotels',
         notes: `Inquiry for package "${pkg.title}". Special notes: ${formData.notes}`,
-        quotedAmount: pkg.indicativePrice ? pkg.indicativePrice * Number(formData.travelers) : undefined
+        quotedAmount: (pkg as any).isPricePublished && (pkg as any).publishedPrice
+          ? (pkg as any).publishedPrice * Number(formData.travelers)
+          : undefined
       });
 
       setSubmittedRef(record.reference);
@@ -82,7 +86,9 @@ export const PackageDetailPage: React.FC<PackageDetailPageProps> = ({ slug, onNa
                 title: pkg.title,
                 heroImage: pkg.heroImage,
                 location: pkg.destinations.join(', '),
-                priceNote: `$${pkg.priceFrom?.toLocaleString()} / person`
+                priceNote: (pkg as any).isPricePublished && (pkg as any).publishedPrice
+                  ? `$${(pkg as any).publishedPrice?.toLocaleString()} / person`
+                  : undefined
               }}
               variant="button"
             />

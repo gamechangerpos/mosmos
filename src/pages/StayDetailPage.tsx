@@ -54,7 +54,9 @@ export const StayDetailPage: React.FC<StayDetailPageProps> = ({ slug, onNavigate
         travelDates: `${formData.checkIn || 'TBD'} to ${formData.checkOut || 'TBD'}`,
         adultsCount: Number(formData.guests),
         childrenCount: 0,
-        budgetRange: stay.indicativePricePerNight ? `$${stay.indicativePricePerNight}/night` : 'Inquire',
+        budgetRange: (stay as any).isPricePublished && (stay as any).publishedPrice
+          ? `$${(stay as any).publishedPrice}/night`
+          : 'Tailored accommodation request',
         travelStyle: `Accommodation: ${stay.name}`,
         preferredExperiences: ['Luxury Lodge Stay', 'Wildlife Activities'],
         accommodationType: stay.type,
@@ -94,7 +96,9 @@ export const StayDetailPage: React.FC<StayDetailPageProps> = ({ slug, onNavigate
               title: stay.name,
               heroImage: stay.heroImage,
               location: `${stay.destination} · ${stay.location}`,
-              priceNote: stay.indicativePricePerNight ? `$${stay.indicativePricePerNight}/night` : undefined
+              priceNote: (stay as any).isPricePublished && (stay as any).publishedPrice
+                ? `$${(stay as any).publishedPrice}/night`
+                : undefined
             }}
             variant="button"
           />
@@ -133,12 +137,19 @@ export const StayDetailPage: React.FC<StayDetailPageProps> = ({ slug, onNavigate
             <span className="text-[10px] text-[#D9D0C2]/50 uppercase tracking-wider block">Capacity</span>
             <span className="font-light text-[#F7F4ED]">{stay.capacityNote}</span>
           </div>
-          <div>
-            <span className="text-[10px] text-[#D9D0C2]/50 uppercase tracking-wider block">Indicative Rate</span>
-            <span className="font-serif text-base font-semibold text-[#B69A68]">
-              ${stay.indicativePricePerNight} <span className="text-xs font-normal text-white/50">/ night</span>
-            </span>
-          </div>
+          {(stay as any).isPricePublished && (stay as any).publishedPrice ? (
+            <div>
+              <span className="text-[10px] text-[#D9D0C2]/50 uppercase tracking-wider block">Published Rate</span>
+              <span className="font-serif text-base font-semibold text-[#B69A68]">
+                ${(stay as any).publishedPrice} <span className="text-xs font-normal text-white/50">/ night</span>
+              </span>
+            </div>
+          ) : (
+            <div>
+              <span className="text-[10px] text-[#D9D0C2]/50 uppercase tracking-wider block">Destination</span>
+              <span className="font-light text-[#F7F4ED]">{stay.destination}</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -196,8 +207,8 @@ export const StayDetailPage: React.FC<StayDetailPageProps> = ({ slug, onNavigate
               </div>
             </div>
 
-            {/* Rate Inclusions Note */}
-            {stay.priceNote && (
+            {/* Rate Inclusions Note (only if published by admin) */}
+            {(stay as any).isPricePublished && (stay as any).publishedPrice && stay.priceNote && (
               <div className="mt-8 p-5 bg-[#0f0f0f] text-[#D9D0C2] text-xs font-light border border-white/10">
                 <span className="text-[10px] uppercase tracking-wider text-[#B69A68] font-semibold block mb-1">
                   Rate Information:
@@ -215,17 +226,28 @@ export const StayDetailPage: React.FC<StayDetailPageProps> = ({ slug, onNavigate
                 Direct Reservation
               </div>
 
-              <div className="mb-6 pt-2">
-                <span className="text-[10px] uppercase tracking-wider text-[#78634B] font-semibold block mb-1">
-                  Indicative Rate
-                </span>
-                <div className="flex items-baseline gap-2">
-                  <span className="font-serif text-3xl font-light text-[#20221F]">
-                    ${stay.indicativePricePerNight}
+              {(stay as any).isPricePublished && (stay as any).publishedPrice ? (
+                <div className="mb-6 pt-2">
+                  <span className="text-[10px] uppercase tracking-wider text-[#78634B] font-semibold block mb-1">
+                    Published Rate
                   </span>
-                  <span className="text-xs text-[#20221F]/60 font-light">/ night</span>
+                  <div className="flex items-baseline gap-2">
+                    <span className="font-serif text-3xl font-light text-[#20221F]">
+                      ${(stay as any).publishedPrice}
+                    </span>
+                    <span className="text-xs text-[#20221F]/60 font-light">/ night</span>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="mb-6 pt-2">
+                  <span className="text-[10px] uppercase tracking-wider text-[#78634B] font-semibold block mb-1">
+                    Bespoke Reservation
+                  </span>
+                  <p className="text-xs text-[#20221F]/70 font-light">
+                    Submit your dates and party size for verified lodge availability and personalized reservation details.
+                  </p>
+                </div>
+              )}
 
               {submittedRef ? (
                 <div className="p-6 bg-emerald-50 border border-emerald-300 text-emerald-900 text-center">

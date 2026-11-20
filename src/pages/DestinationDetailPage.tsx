@@ -364,9 +364,13 @@ export const DestinationDetailPage: React.FC<DestinationDetailPageProps> = ({ sl
                       </p>
                     </div>
                     <div className="pt-3 border-t border-[#D9D0C2] flex items-center justify-between text-xs">
-                      <span className="text-[#78634B] font-medium">
-                        ${stay.indicativePricePerNight} <span className="text-[10px] text-[#20221F]/50">/ night</span>
-                      </span>
+                      {(stay as any).isPricePublished && (stay as any).publishedPrice ? (
+                        <span className="text-[#78634B] font-medium">
+                          ${(stay as any).publishedPrice} <span className="text-[10px] text-[#20221F]/50">/ night</span>
+                        </span>
+                      ) : (
+                        <span />
+                      )}
                       <span className="text-[#20221F] font-semibold uppercase tracking-wider text-[11px] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
                         <span>Reserve</span>
                         <ArrowRight className="w-3 h-3" />
@@ -433,12 +437,16 @@ export const DestinationDetailPage: React.FC<DestinationDetailPageProps> = ({ sl
                       </p>
                     </div>
                     <div className="pt-3 border-t border-[#D9D0C2] flex items-center justify-between text-xs">
-                      <div>
-                        <span className="text-[10px] text-[#20221F]/50 uppercase tracking-wider block">From</span>
-                        <span className="font-serif text-base font-semibold text-[#20221F]">
-                          ${tour.indicativePrice?.toLocaleString()}
-                        </span>
-                      </div>
+                      {(tour as any).isPricePublished && (tour as any).publishedPrice ? (
+                        <div>
+                          <span className="text-[10px] text-[#20221F]/50 uppercase tracking-wider block">From</span>
+                          <span className="font-serif text-base font-semibold text-[#20221F]">
+                            ${(tour as any).publishedPrice?.toLocaleString()}
+                          </span>
+                        </div>
+                      ) : (
+                        <span />
+                      )}
                       <span className="text-[#78634B] font-semibold uppercase tracking-wider text-[11px] flex items-center gap-1 group-hover:translate-x-1 transition-transform">
                         <span>Details</span>
                         <ArrowRight className="w-3 h-3" />

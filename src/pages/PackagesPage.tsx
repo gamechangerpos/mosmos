@@ -77,7 +77,9 @@ export const PackagesPage: React.FC<PackagesPageProps> = ({ onNavigate }) => {
                         title: pkg.title,
                         heroImage: pkg.heroImage,
                         location: pkg.destinations.join(' & '),
-                        priceNote: `$${pkg.indicativePrice?.toLocaleString()} / guest`
+                        priceNote: (pkg as any).isPricePublished && (pkg as any).publishedPrice
+                          ? `$${(pkg as any).publishedPrice?.toLocaleString()} / guest`
+                          : undefined
                       }}
                       variant="icon"
                     />
@@ -108,12 +110,16 @@ export const PackagesPage: React.FC<PackagesPageProps> = ({ onNavigate }) => {
                   </div>
 
                   <div className="pt-4 border-t border-[#D9D0C2] flex items-center justify-between text-xs">
-                    <div>
-                      <span className="text-[10px] uppercase tracking-wider text-[#20221F]/50 block">From</span>
-                      <span className="font-serif text-lg font-semibold text-[#20221F]">
-                        ${pkg.indicativePrice?.toLocaleString()} <span className="text-xs font-normal text-[#20221F]/50">/ guest</span>
-                      </span>
-                    </div>
+                    {(pkg as any).isPricePublished && (pkg as any).publishedPrice ? (
+                      <div>
+                        <span className="text-[10px] uppercase tracking-wider text-[#20221F]/50 block">From</span>
+                        <span className="font-serif text-lg font-semibold text-[#20221F]">
+                          ${(pkg as any).publishedPrice?.toLocaleString()} <span className="text-xs font-normal text-[#20221F]/50">/ guest</span>
+                        </span>
+                      </div>
+                    ) : (
+                      <span />
+                    )}
                     <span className="px-4 py-2 bg-[#0f0f0f] text-white text-[11px] uppercase tracking-[0.15em] font-semibold hover:bg-[#78634B] transition-colors">
                       View Package
                     </span>

@@ -4,7 +4,6 @@ import { ArrowRight, Scale, MapPin } from 'lucide-react';
 import { CinematicVideo } from '../components/common/CinematicVideo';
 import { SearchFilterBar } from '../components/SearchFilterBar';
 import { ScrollReveal, MaskedTextReveal, ParallaxImage, VirginCurtainReveal } from '../components/animations/ScrollReveal';
-import { InteractiveTravelMap } from '../components/common/InteractiveTravelMap';
 import { DestinationComparisonModal } from '../components/destinations/DestinationComparisonModal';
 import { WishlistButton } from '../components/common/WishlistButton';
 
@@ -125,15 +124,6 @@ export const DestinationsPage: React.FC<DestinationsPageProps> = ({ onNavigate }
         </ScrollReveal>
       </div>
 
-      {/* Interactive African Expedition Map */}
-      <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 mb-16">
-        <ScrollReveal direction="up" delay={0.2}>
-          <InteractiveTravelMap
-            onNavigate={onNavigate}
-            highlightedDestinations={['uganda', 'kenya', 'tanzania', 'rwanda', 'botswana', 'zanzibar']}
-          />
-        </ScrollReveal>
-      </div>
 
       {/* Destinations Editorial Gallery Grid */}
       <div className="max-w-[1440px] mx-auto px-4 sm:px-8 lg:px-12 py-8">
